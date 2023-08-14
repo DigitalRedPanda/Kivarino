@@ -1,0 +1,20 @@
+@font-face {
+font-family: 'Roobert-Regular';
+src: url('Roobert-Regular.ttf');
+}
+
+.button {
+-fx-text-fill: white;
+-fx-font-family: 'Roobert-Regular';
+-fx-font-size: 15px;
+/*-fx-skin: 'com.digiunion.gui.TabSkin';*/
+-fx-background-color: #404446;
+-fx-background-radius: 0px;
+-fx-font-weight: 900;
+}
+.button:hover{
+-fx-background-color: #54626F;
+}
+.button:pressed{
+-fx-background-color: #6082B6;
+}
