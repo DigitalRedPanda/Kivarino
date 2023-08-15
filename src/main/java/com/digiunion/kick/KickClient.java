@@ -40,14 +40,14 @@ public class KickClient implements ChannelAuthorizer {
             try (val response = client.get().newCall(new Request.Builder().url(CHANNELS.url.concat(slug)).get().build()).execute()) {
                 return response.body().string();
             } catch (IOException e) {
-                log.severe("could not execute %s's client call; %s".formatted(slug, e.getMessage()));
+                log.severe("could not execute %s's client call; %s".formatted(slug, e));
                 return null;
             }
         }).thenApply(json -> {
             try {
                 return mapper.readValue(json, Channel.class);
             } catch (JsonProcessingException e) {
-                log.severe("could not process json for %s's channel; %s".formatted(slug, e.getMessage()));
+                log.severe("could not process json for %s's channel; %s".formatted(slug, e));
                 return null;
             }
         });
@@ -59,14 +59,14 @@ public class KickClient implements ChannelAuthorizer {
             try (val response = client.get().newCall(new Request.Builder().url(CHANNELS.url.concat(slug)).get().build()).execute()) {
                 return response.body().string();
             } catch (IOException e) {
-                log.severe("could not execute %s's livestream client call; %s".formatted(slug, e.getMessage()));
+                log.severe("could not execute %s's livestream client call; %s".formatted(slug, e));
                 return null;
             }
         }).thenApply(json -> {
             try {
                 return mapper.readValue(json, Channel.class).livestream();
             } catch (JsonProcessingException e) {
-                log.severe("could not process json for %s's livestream; %s".formatted(slug, e.getMessage()));
+                log.severe("could not process json for %s's livestream; %s".formatted(slug, e));
                 return null;
             }
         });
@@ -79,7 +79,7 @@ public class KickClient implements ChannelAuthorizer {
         try {
             return requestToken(chatroomId, socketId).get();
         } catch (InterruptedException | ExecutionException e) {
-            log.severe("could not execute requestToken; " + e.getMessage());
+            log.severe("could not execute requestToken; " + e);
             return null;
         }
     }
@@ -97,17 +97,21 @@ public class KickClient implements ChannelAuthorizer {
                     """.formatted(socketId, chatroomId), MediaType.parse("application/json"))).build()).execute()){
                 return response.body().string();
         } catch (IOException e) {
-                log.severe("could not send token request; " + e.getMessage());
+                log.severe("could not send token request; " + e);
                 return "";
             }}).thenApply(json -> {
             try {
                 return mapper.readValue(json, PusherAuthTokenResponse.class).auth();
             } catch (JsonProcessingException e) {
-                log.severe("could not process json token; " + e.getMessage());
+                log.severe("could not process json token; " + e);
                 return "";
             }
         });
 
+    }
+
+    public CompletableFuture<String> getToken(){
+        return null;
     }
 }
 

@@ -8,6 +8,8 @@ import lombok.NonNull;
 import lombok.extern.java.Log;
 
 import java.io.Closeable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import static com.pusher.client.connection.ConnectionState.DISCONNECTED;
@@ -16,6 +18,8 @@ public class KickWebsocket implements Closeable {
 
     private final KickClient client = new KickClient();
     private final Pusher pusher;
+
+    private final List<com.pusher.client.channel.Channel> channelList = new ArrayList<com.pusher.client.channel.Channel>();
     private final static String viteRecapchaSiteKey = "6LfW60MjAAAAAKJlV_IW6cYl63zpKNuI4EMkxR9b";
     private final static String vitePuserAppKey = "eb1d5f283081a78b932c";
     private final static String vitePusherAppCluster = "us2";
@@ -35,9 +39,9 @@ public class KickWebsocket implements Closeable {
         return CompletableFuture.runAsync(subscribe(channel));
     }
 
-    private Runnable subscribe(Channel channel) {
-        if (!pusher.subscribePresence(String.valueOf(channel.chatroom().id())).isSubscribed()) {
-            pusher.subscribe(String.valueOf(channel.chatroom().id()));
+    private Runnable subscribe(@NonNull Channel channel) {
+        if (!pusher.subscribePresence("chatroom." + channel.chatroom().id()).isSubscribed()) {
+            channelList.add(pusher.subscribe(String.valueOf(channel.chatroom().id())));
             log.info("subscribed to %s with %s".formatted(channel.slug(), channel.chatroom().id()));
         }
         return null;

@@ -33,12 +33,14 @@ public class GUI extends Application {
         val channel2 = client.getChannel("narash").thenApply(channel -> toButton(channel.user().name()));
         val channel3 = client.getChannel("quillcannon").thenApply(channel -> toButton(channel.user().name()));
         val channel4 = client.getChannel("rowex").thenApply(channel -> toButton(channel.user().name()));
-        CompletableFuture.allOf(channel1, channel2, channel3, channel4).join();
+        val channel5 = client.getChannel("krippyx").thenApply(channel -> toButton(channel.user().name()));
+        CompletableFuture.allOf(channel1, channel2, channel3, channel4, channel5).join();
         try {
             gridPane.add(channel1.get(), 0, 0);
             gridPane.add(channel2.get(), 1, 0);
             gridPane.add(channel3.get(), 2, 0);
             gridPane.add(channel4.get(), 3, 0);
+            gridPane.add(channel5.get(), 4, 0);
             System.out.println(channel2.get().getFont().getName());
         } catch (Exception e){
             switch (e.getCause().getClass().getName()){
@@ -54,10 +56,12 @@ public class GUI extends Application {
 //        fillTransition.setToValue(Color.web("#54626F"));
 //        fillTransition.setCycleCount(FillTransition.INDEFINITE);
 //        fillTransition.playFromStart();
-        scene = new Scene(gridPane, 200, 200);
+        scene = new Scene(gridPane, 400, 800);
         scene.getStylesheets().add("main.css");
         scene.setFill(Color.valueOf("#36393e"));
         primaryStage.setScene(scene);
+        primaryStage.setMinWidth(400);
+        primaryStage.setMinHeight(800);
         primaryStage.getIcons().add(new Image("Kivarino.png"));
         primaryStage.setTitle("Kivarino");
         primaryStage.show();

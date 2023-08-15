@@ -32,7 +32,11 @@ public final class Main {
         val channel2 = client.getChannel("narash").thenAccept(System.out::println);
         val channel3 = client.getChannel("rustytheowl").thenAccept(System.out::println);
         val channel4 = client.getChannel("quillcannon").thenAccept(System.out::println);
-        CompletableFuture.allOf(channel1, channel2, channel3, channel4).join();
+        val channel5 = client.getChannel("krippyx").thenAccept(System.out::println);
+        val channel6 = client.getChannel("luraxz").thenAccept(System.out::println);
+        val channel7 = client.getChannel("brathaifa").thenAccept(System.out::println);
+        val channel8 = client.getChannel("migren2009").thenAccept(System.out::println);
+        CompletableFuture.allOf(channel1, channel2, channel3, channel4, channel5, channel6).join();
         var time2 = System.currentTimeMillis();
         System.out.printf("executed for %dms\n", time2 - time1);
         val clientS = new OkHttpClient.Builder().build();
@@ -46,14 +50,45 @@ public final class Main {
         try(val response = clientS.newCall(new Request.Builder().url(CHANNELS.url.concat("narash")).get().build()).execute()) {
             val result = mapper.readValue(response.body().string(), Channel.class);
             System.out.println(result);
+//            System.out.println(response.body().string());
         } catch (IOException e) {
             log.severe("could not send client call for %s, %s".formatted("narash", e.getMessage()));
+        }
+        try(val response = clientS.newCall(new Request.Builder().url(CHANNELS.url.concat("quillcannon")).get().build()).execute()) {
+            val result = mapper.readValue(response.body().string(), Channel.class);
+            System.out.println(result);
+        } catch (IOException e) {
+            log.severe("could not send client call for %s, %s".formatted("quillcannon", e.getMessage()));
         }
         try(val response = clientS.newCall(new Request.Builder().url(CHANNELS.url.concat("rustytheowl")).get().build()).execute()) {
             val result = mapper.readValue(response.body().string(), Channel.class);
             System.out.println(result);
         } catch (IOException e) {
-            log.severe("could not send client call for %s, %s".formatted("quillcannon", e.getMessage()));
+            log.severe("could not send client call for %s, %s".formatted("rustytheowl", e.getMessage()));
+        }
+        try(val response = clientS.newCall(new Request.Builder().url(CHANNELS.url.concat("krippyx")).get().build()).execute()) {
+            val result = mapper.readValue(response.body().string(), Channel.class);
+            System.out.println(result);
+        } catch (IOException e) {
+            log.severe("could not send client call for %s, %s".formatted("krippyx", e.getMessage()));
+        }
+        try(val response = clientS.newCall(new Request.Builder().url(CHANNELS.url.concat("luraxz")).get().build()).execute()) {
+            val result = mapper.readValue(response.body().string(), Channel.class);
+            System.out.println(result);
+        } catch (IOException e) {
+            log.severe("could not send client call for %s, %s".formatted("luraxz", e.getMessage()));
+        }
+        try(val response = clientS.newCall(new Request.Builder().url(CHANNELS.url.concat("brathaifa")).get().build()).execute()) {
+            val result = mapper.readValue(response.body().string(), Channel.class);
+            System.out.println(result);
+        } catch (IOException e) {
+            log.severe("could not send client call for %s, %s".formatted("brathaifa", e.getMessage()));
+        }
+        try(val response = clientS.newCall(new Request.Builder().url(CHANNELS.url.concat("migren2009")).get().build()).execute()) {
+            val result = mapper.readValue(response.body().string(), Channel.class);
+            System.out.println(result);
+        } catch (IOException e) {
+            log.severe("could not send client call for %s, %s".formatted("migren2009", e.getMessage()));
         }
         time2 = System.currentTimeMillis();
         System.out.printf("executed for %dms\n", time2 - time1);
