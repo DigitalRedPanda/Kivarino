@@ -7,14 +7,14 @@ src: url('Roobert-Regular.ttf');
 -fx-text-fill: white;
 -fx-font-family: 'Roobert-Regular';
 -fx-font-size: 15px;
-/*-fx-skin: 'com.digiunion.gui.TabSkin';*/
+-fx-skin: 'com.digiunion.gui.skin.TabSkin';
 -fx-background-color: #404446;
 -fx-background-radius: 0px;
 -fx-font-weight: 900;
 }
-.button:hover{
+/*.button:hover{
 -fx-background-color: #54626F;
 }
 .button:pressed{
 -fx-background-color: #6082B6;
-}
+}*/

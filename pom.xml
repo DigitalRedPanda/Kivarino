@@ -65,9 +65,9 @@
       <version>3.0.0</version>
     </dependency>
   </dependencies>
-  <profiles>
-    <profile>
-      <id>native</id>
+<!--  <profiles>-->
+<!--    <profile>-->
+<!--      <id>native</id>-->
       <build>
         <resources>
           <resource>
@@ -75,32 +75,32 @@
           </resource>
         </resources>
         <plugins>
-          <plugin>
-            <groupId>org.graalvm.buildtools</groupId>
-            <artifactId>native-maven-plugin</artifactId>
-            <version>0.9.23</version>
-            <extensions>true</extensions>
-            <executions>
-              <execution>
-                <id>build-native</id>
-                <goals>
-                  <goal>build</goal>
-                </goals>
-                <phase>package</phase>
-              </execution>
-              <!--          <execution>-->
-              <!--            <id>test-native</id>-->
-              <!--            <goals>-->
-              <!--              <goal>test</goal>-->
-              <!--            </goals>-->
-              <!--            <phase>test</phase>-->
-              <!--          </execution>-->
-            </executions>
-            <configuration>
-              <skip>false</skip>
-              <buildArgs>--no-fallback</buildArgs>
-            </configuration>
-          </plugin>
+<!--          <plugin>-->
+<!--            <groupId>org.graalvm.buildtools</groupId>-->
+<!--            <artifactId>native-maven-plugin</artifactId>-->
+<!--            <version>0.9.23</version>-->
+<!--            <extensions>true</extensions>-->
+<!--            <executions>-->
+<!--              <execution>-->
+<!--                <id>build-native</id>-->
+<!--                <goals>-->
+<!--                  <goal>build</goal>-->
+<!--                </goals>-->
+<!--                <phase>package</phase>-->
+<!--              </execution>-->
+<!--              &lt;!&ndash;          <execution>&ndash;&gt;-->
+<!--              &lt;!&ndash;            <id>test-native</id>&ndash;&gt;-->
+<!--              &lt;!&ndash;            <goals>&ndash;&gt;-->
+<!--              &lt;!&ndash;              <goal>test</goal>&ndash;&gt;-->
+<!--              &lt;!&ndash;            </goals>&ndash;&gt;-->
+<!--              &lt;!&ndash;            <phase>test</phase>&ndash;&gt;-->
+<!--              &lt;!&ndash;          </execution>&ndash;&gt;-->
+<!--            </executions>-->
+<!--            <configuration>-->
+<!--              <skip>false</skip>-->
+<!--              <buildArgs>&#45;&#45;no-fallback</buildArgs>-->
+<!--            </configuration>-->
+<!--          </plugin>-->
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>exec-maven-plugin</artifactId>
@@ -137,6 +137,6 @@
           </plugin>
         </plugins>
       </build>
-    </profile>
-  </profiles>
+<!--    </profile>-->
+<!--  </profiles>-->
 </project>

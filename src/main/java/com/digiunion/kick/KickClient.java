@@ -18,6 +18,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static com.digiunion.kick.util.KickEndpoints.BASE_URL;
 import static com.digiunion.kick.util.KickEndpoints.CHANNELS;
@@ -28,11 +30,14 @@ import static com.digiunion.kick.util.KickEndpoints.CHANNELS;
 @Log
 public class KickClient implements ChannelAuthorizer {
     private final ObjectMapper mapper;
+
+    private final ExecutorService executor;
     private final static ThreadLocal <OkHttpClient> client = new ThreadLocal<>();
     private final static OkHttpClient rClient = new OkHttpClient.Builder().build();
 
     public KickClient(){
         mapper = new ObjectMapper();
+        executor = Executors.newFixedThreadPool(4);
     }
     public CompletableFuture<Channel> getChannel(@NonNull String slug) {
         return CompletableFuture.supplyAsync(() -> {
@@ -43,7 +48,7 @@ public class KickClient implements ChannelAuthorizer {
                 log.severe("could not execute %s's client call; %s".formatted(slug, e));
                 return null;
             }
-        }).thenApply(json -> {
+        }, executor).thenApply(json -> {
             try {
                 return mapper.readValue(json, Channel.class);
             } catch (JsonProcessingException e) {
@@ -62,7 +67,7 @@ public class KickClient implements ChannelAuthorizer {
                 log.severe("could not execute %s's livestream client call; %s".formatted(slug, e));
                 return null;
             }
-        }).thenApply(json -> {
+        }, executor).thenApply(json -> {
             try {
                 return mapper.readValue(json, Channel.class).livestream();
             } catch (JsonProcessingException e) {
@@ -99,7 +104,7 @@ public class KickClient implements ChannelAuthorizer {
         } catch (IOException e) {
                 log.severe("could not send token request; " + e);
                 return "";
-            }}).thenApply(json -> {
+            }}, executor).thenApply(json -> {
             try {
                 return mapper.readValue(json, PusherAuthTokenResponse.class).auth();
             } catch (JsonProcessingException e) {

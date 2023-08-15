@@ -29,25 +29,22 @@ public class GUI extends Application {
         gridPane.setAlignment(Pos.TOP_LEFT);
         gridPane.setVgap(1);
         gridPane.setHgap(1);
-        val channel1 = client.getChannel("dote").thenApply(channel -> toButton(channel.user().name()));
-        val channel2 = client.getChannel("narash").thenApply(channel -> toButton(channel.user().name()));
-        val channel3 = client.getChannel("quillcannon").thenApply(channel -> toButton(channel.user().name()));
-        val channel4 = client.getChannel("rowex").thenApply(channel -> toButton(channel.user().name()));
-        val channel5 = client.getChannel("krippyx").thenApply(channel -> toButton(channel.user().name()));
+        val channel1= client.getChannel("dote").thenApply(channel -> toButton(channel.slug()));
+        val channel2 = client.getChannel("narash").thenApply(channel -> toButton(channel.slug()));
+        val channel3 = client.getChannel("quillcannon").thenApply(channel -> toButton(channel.slug()));
+        val channel4 = client.getChannel("rowex").thenApply(channel -> toButton(channel.slug()));
+        val channel5 = client.getChannel("krippyx").thenApply(channel -> toButton(channel.slug()));
         CompletableFuture.allOf(channel1, channel2, channel3, channel4, channel5).join();
-        try {
-            gridPane.add(channel1.get(), 0, 0);
-            gridPane.add(channel2.get(), 1, 0);
-            gridPane.add(channel3.get(), 2, 0);
-            gridPane.add(channel4.get(), 3, 0);
-            gridPane.add(channel5.get(), 4, 0);
-            System.out.println(channel2.get().getFont().getName());
-        } catch (Exception e){
-            switch (e.getCause().getClass().getName()){
-                case "ExecutionException", "InterruptedException" -> log.severe("could not get completablefuture results; " + e.getMessage());
-            }
-        }
-//        val gridPane = new StackPane();
+            gridPane.add(channel1.join(), 0, 0);
+            gridPane.add(channel2.join(), 1, 0);
+            gridPane.add(channel3.join(), 2, 0);
+            gridPane.add(channel4.join(), 3, 0);
+            gridPane.add(channel5.join(), 4, 0);
+//            System.out.println(channel2.get().getFont().getName());
+//        val image = new ImageView(new Image(client.getLivestream("narash").join().thumbnail().url()));
+//        gridPane.getChildren().add(image);
+
+        //        val gridPane = new StackPane();
 //        gridPane.setAlignment(Pos.CENTER);
 //        val shape = new Rectangle(300, 100, Color.web("`#404446;"));
 //        gridPane.getChildren().add(shape);
@@ -68,6 +65,7 @@ public class GUI extends Application {
     }
 
     private Button toButton(String text){
+        System.out.println(text);
         return new Button(text);
     }
 }
