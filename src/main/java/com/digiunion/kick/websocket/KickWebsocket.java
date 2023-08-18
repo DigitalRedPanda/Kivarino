@@ -6,6 +6,7 @@ import com.pusher.client.Pusher;
 import com.pusher.client.PusherOptions;
 import lombok.NonNull;
 import lombok.extern.java.Log;
+import lombok.val;
 
 import java.io.Closeable;
 import java.util.ArrayList;
@@ -19,7 +20,7 @@ public class KickWebsocket implements Closeable {
     private final KickClient client = new KickClient();
     private final Pusher pusher;
 
-    private final List<com.pusher.client.channel.Channel> channelList = new ArrayList<com.pusher.client.channel.Channel>();
+    private final List<Channel> channelList = new ArrayList<Channel>();
     private final static String viteRecapchaSiteKey = "6LfW60MjAAAAAKJlV_IW6cYl63zpKNuI4EMkxR9b";
     private final static String vitePuserAppKey = "eb1d5f283081a78b932c";
     private final static String vitePusherAppCluster = "us2";
@@ -40,11 +41,26 @@ public class KickWebsocket implements Closeable {
     }
 
     private Runnable subscribe(@NonNull Channel channel) {
-        if (!pusher.subscribePresence("chatroom." + channel.chatroom().id()).isSubscribed()) {
-            channelList.add(pusher.subscribe(String.valueOf(channel.chatroom().id())));
+        val chann = "chatroom." + channel.chatroom().id();
+        if (!pusher.subscribePresence(chann).isSubscribed()) {
+            pusher.subscribe(chann);
+            channelList.add(channel);
             log.info("subscribed to %s with %s".formatted(channel.slug(), channel.chatroom().id()));
         }
         return null;
+    }
+
+    private Runnable unsubscribe(@NonNull Channel channel){
+        val chann = "chatroom." + channel.chatroom().id();
+        if(pusher.subscribePresence(chann).isSubscribed()){
+            pusher.unsubscribe(chann);
+            channelList.removeIf(channel::equals);
+        }
+        return null;
+    }
+
+    public CompletableFuture<Void> disconnect(Channel channel){
+        return CompletableFuture.runAsync(unsubscribe(channel));
     }
 
     @Override

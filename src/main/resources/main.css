@@ -1,20 +1,17 @@
-@font-face {
-font-family: 'Roobert-Regular';
-src: url('Roobert-Regular.ttf');
-}
-
+/*@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');*/
 .button {
 -fx-text-fill: white;
--fx-font-family: 'Roobert-Regular';
 -fx-font-size: 15px;
+/*-fx-font-family: 'Roboto', sans-serif;*/
 -fx-skin: 'com.digiunion.gui.skin.TabSkin';
 -fx-background-color: #404446;
 -fx-background-radius: 0px;
--fx-font-weight: 900;
+-fx-font-weight: 600;
 }
 /*.button:hover{
 -fx-background-color: #54626F;
 }
-.button:pressed{
--fx-background-color: #6082B6;
-}*/
+*/
+.button:focused{
+-fx-background-color: #0B6623;
+}

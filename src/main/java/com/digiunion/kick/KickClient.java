@@ -37,13 +37,13 @@ public class KickClient implements ChannelAuthorizer {
 
     public KickClient(){
         mapper = new ObjectMapper();
-        executor = Executors.newFixedThreadPool(4);
+        executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() / 2);
     }
     public CompletableFuture<Channel> getChannel(@NonNull String slug) {
         return CompletableFuture.supplyAsync(() -> {
             client.set(rClient);
             try (val response = client.get().newCall(new Request.Builder().url(CHANNELS.url.concat(slug)).get().build()).execute()) {
-                return response.body().string();
+            return response.body().string();
             } catch (IOException e) {
                 log.severe("could not execute %s's client call; %s".formatted(slug, e));
                 return null;

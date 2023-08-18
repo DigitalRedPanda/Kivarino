@@ -25,15 +25,15 @@ public class TabSkin  extends ButtonSkin {
      */
     public TabSkin(Button control) {
         super(control);
-        ColorAdjust colorAdjust = new ColorAdjust();
+        val colorAdjust = new ColorAdjust();
         colorAdjust.setBrightness(0.0);
         control.setEffect(colorAdjust);
-
         control.setOnMouseEntered(e -> {
             val fadeInTimeline = new Timeline(
                 new KeyFrame(Duration.ZERO,
                     new KeyValue(colorAdjust.brightnessProperty(), colorAdjust.brightnessProperty().getValue(), Interpolator.EASE_BOTH)),
-                new KeyFrame(Duration.millis(100), new KeyValue(colorAdjust.brightnessProperty(), 0.25, Interpolator.EASE_BOTH)
+                new KeyFrame(Duration.millis(100),
+                    new KeyValue(colorAdjust.brightnessProperty(), 0.25, Interpolator.EASE_BOTH)
                 ));
             System.out.println("lmao");
             fadeInTimeline.play();
@@ -46,6 +46,17 @@ public class TabSkin  extends ButtonSkin {
                 ));
             fadeOutTimeline.play();
         });
+        System.out.println(control.getFont().getName());
+//        val colorInput = new ColorInput();
+//        colorInput.setPaint(defaultColor);
+//        control.setEffect(colorInput);
+//        control.setOnMouseClicked(event -> {
+//            val transition = new Timeline(
+//              new KeyFrame(Duration.ZERO, new KeyValue(colorInput.paintProperty(), defaultColor, Interpolator.EASE_BOTH)),
+//              new KeyFrame(Duration.millis(100), new KeyValue(colorInput.paintProperty(), endColor, Interpolator.EASE_BOTH))
+//            );
+//            transition.play();
+//        });
 
 //        control.setOnAction();
     }

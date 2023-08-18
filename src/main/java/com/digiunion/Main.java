@@ -3,7 +3,7 @@ package com.digiunion;
 import com.digiunion.kick.KickClient;
 import com.digiunion.kick.model.Channel;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -16,12 +16,12 @@ import static com.digiunion.kick.util.KickEndpoints.CHANNELS;
 /**
  * Main is the class where the project runs javafx and the main method
  */
-@Log
+@Slf4j
 public final class Main {
-
+//    private static final Logger log = LoggerFactory.getLogger(Main.class);
     /**
      * examines concurrency implementation with CompletableFutures
-     * @param args: final String[]
+     * @param args: String[]
      */
     public static void main(String[] args) {
 //        GUI.launch(args);
@@ -36,62 +36,63 @@ public final class Main {
         val channel6 = client.getChannel("luraxz").thenAccept(System.out::println);
         val channel7 = client.getChannel("brathaifa").thenAccept(System.out::println);
         val channel8 = client.getChannel("migren2009").thenAccept(System.out::println);
-        CompletableFuture.allOf(channel1, channel2, channel3, channel4, channel5, channel6).join();
+        CompletableFuture.allOf(channel1, channel2, channel3, channel4, channel5, channel6, channel7, channel8).join();
         var time2 = System.currentTimeMillis();
-        System.out.printf("executed for %dms\n", time2 - time1);
+        log.info("executed for {}ms", time2 - time1);
         val clientS = new OkHttpClient.Builder().build();
         time1 = System.currentTimeMillis();
         try(val response = clientS.newCall(new Request.Builder().url(CHANNELS.url.concat("copynine")).get().build()).execute()) {
-            val result = mapper.readValue(response.body().string() ,Channel.class);
+            val result = mapper.readValue(response.body().string() , Channel.class);
             System.out.println(result);
         } catch (IOException e) {
-            log.severe("could not send client call for %s, %s".formatted("copynine", e.getMessage()));
+            log.error("could not send client call for {}, {}","copynine", e.getMessage());
         }
         try(val response = clientS.newCall(new Request.Builder().url(CHANNELS.url.concat("narash")).get().build()).execute()) {
             val result = mapper.readValue(response.body().string(), Channel.class);
             System.out.println(result);
 //            System.out.println(response.body().string());
         } catch (IOException e) {
-            log.severe("could not send client call for %s, %s".formatted("narash", e.getMessage()));
+            log.error("could not send client call for {}, {}","narash", e.getMessage());
         }
         try(val response = clientS.newCall(new Request.Builder().url(CHANNELS.url.concat("quillcannon")).get().build()).execute()) {
             val result = mapper.readValue(response.body().string(), Channel.class);
             System.out.println(result);
         } catch (IOException e) {
-            log.severe("could not send client call for %s, %s".formatted("quillcannon", e.getMessage()));
+            log.error("could not send client call for {}, {}","quillcannon", e.getMessage());
         }
         try(val response = clientS.newCall(new Request.Builder().url(CHANNELS.url.concat("rustytheowl")).get().build()).execute()) {
             val result = mapper.readValue(response.body().string(), Channel.class);
             System.out.println(result);
         } catch (IOException e) {
-            log.severe("could not send client call for %s, %s".formatted("rustytheowl", e.getMessage()));
+            log.error("could not send client call for {}, {}","rustytheowl", e.getMessage());
         }
         try(val response = clientS.newCall(new Request.Builder().url(CHANNELS.url.concat("krippyx")).get().build()).execute()) {
             val result = mapper.readValue(response.body().string(), Channel.class);
             System.out.println(result);
         } catch (IOException e) {
-            log.severe("could not send client call for %s, %s".formatted("krippyx", e.getMessage()));
+            log.error("could not send client call for {}, {}","krippyx", e.getMessage());
         }
         try(val response = clientS.newCall(new Request.Builder().url(CHANNELS.url.concat("luraxz")).get().build()).execute()) {
             val result = mapper.readValue(response.body().string(), Channel.class);
             System.out.println(result);
         } catch (IOException e) {
-            log.severe("could not send client call for %s, %s".formatted("luraxz", e.getMessage()));
+            log.error("could not send client call for {}, {}","luraxz", e.getMessage());
         }
         try(val response = clientS.newCall(new Request.Builder().url(CHANNELS.url.concat("brathaifa")).get().build()).execute()) {
             val result = mapper.readValue(response.body().string(), Channel.class);
             System.out.println(result);
         } catch (IOException e) {
-            log.severe("could not send client call for %s, %s".formatted("brathaifa", e.getMessage()));
+            log.error("could not send client call for {}, {}","brathaifa", e.getMessage());
         }
         try(val response = clientS.newCall(new Request.Builder().url(CHANNELS.url.concat("migren2009")).get().build()).execute()) {
             val result = mapper.readValue(response.body().string(), Channel.class);
             System.out.println(result);
         } catch (IOException e) {
-            log.severe("could not send client call for %s, %s".formatted("migren2009", e.getMessage()));
+            log.error("could not send client call for {}, {}","migren2009", e.getMessage());
         }
         time2 = System.currentTimeMillis();
-        System.out.printf("executed for %dms\n", time2 - time1);
+        log.info("executed for {}ms", time2 - time1);
+        System.exit(0);
     }
 }
 
