@@ -6,8 +6,9 @@ import com.digiunion.kick.websocket.PusherAuthTokenResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pusher.client.ChannelAuthorizer;
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -25,12 +26,13 @@ import static com.digiunion.kick.util.KickEndpoints.BASE_URL;
 import static com.digiunion.kick.util.KickEndpoints.CHANNELS;
 
 /**
- * A kick api wrapper client that wraps kick endpoints into callable methods with HttpBrowserClient.
+ * A kick api wrapper client that wraps kick endpoints into callable methods with OkHttpClient.
  */
-@Log
+@Slf4j
 public class KickClient implements ChannelAuthorizer {
     private final ObjectMapper mapper;
-
+    // To be reused in different classes across the app
+    @Getter
     private final ExecutorService executor;
     private final static ThreadLocal <OkHttpClient> client = new ThreadLocal<>();
     private final static OkHttpClient rClient = new OkHttpClient.Builder().build();
@@ -39,52 +41,100 @@ public class KickClient implements ChannelAuthorizer {
         mapper = new ObjectMapper();
         executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() / 2);
     }
+
+    /**
+     * Grabs a response asynchronously from KickEndpoints.CHANNELS.url using a clone instance of OkHttpClient and parses the json response then maps it to a Channel record
+     * @param slug streamer username with minimized set of symbols
+     * @return
+     */
     public CompletableFuture<Channel> getChannel(@NonNull String slug) {
         return CompletableFuture.supplyAsync(() -> {
             client.set(rClient);
             try (val response = client.get().newCall(new Request.Builder().url(CHANNELS.url.concat(slug)).get().build()).execute()) {
-            return response.body().string();
+                assert response.body() != null;
+                return response.body().string();
             } catch (IOException e) {
-                log.severe("could not execute %s's client call; %s".formatted(slug, e));
+                log.error("could not execute {}'s client call; {}", slug, e);
                 return null;
             }
         }, executor).thenApply(json -> {
             try {
                 return mapper.readValue(json, Channel.class);
             } catch (JsonProcessingException e) {
-                log.severe("could not process json for %s's channel; %s".formatted(slug, e));
+                log.error("could not process json for {}'s channel; {}", slug, e);
                 return null;
             }
         });
     }
 
+    /**
+     * Grabs a response synchronously from KickEndpoints.CHANNELS.url using OkHttpClient and parses the json response then maps it to a Channel record
+     * @param slug streamer username with minimized set of symbols
+     * @return Channel
+     */
+    public Channel getChannelSync(String slug){
+        try(val response = rClient.newCall(new Request.Builder().url(CHANNELS.url.concat(slug)).get().build()).execute()){
+            assert response.body() != null;
+            return mapper.readValue(response.body().string(), Channel.class);
+        } catch (IOException e) {
+            log.error("could not send fetch {}'s; {}", slug, e.getMessage());
+            return null;
+        }
+
+    }
+
+    /**
+     * Grabs a response asynchronously from KickEndpoints.CHANNELS.url using a clone instance of OkHttpClient and parses the json response then maps it to a Livestream record
+     * @param slug streamer username with minimized set of symbols
+     * @return CompletableFuture
+     */
     public CompletableFuture<Livestream> getLivestream(@NonNull String slug) {
         return CompletableFuture.supplyAsync(() -> {
             client.set(rClient);
             try (val response = client.get().newCall(new Request.Builder().url(CHANNELS.url.concat(slug)).get().build()).execute()) {
+                assert response.body() != null;
                 return response.body().string();
             } catch (IOException e) {
-                log.severe("could not execute %s's livestream client call; %s".formatted(slug, e));
+                log.error("could not execute {}'s livestream client call; {}", slug, e);
                 return null;
             }
         }, executor).thenApply(json -> {
             try {
                 return mapper.readValue(json, Channel.class).livestream();
             } catch (JsonProcessingException e) {
-                log.severe("could not process json for %s's livestream; %s".formatted(slug, e));
+                log.error("could not process json for {}'s livestream; {}",slug, e);
                 return null;
             }
         });
     }
 
+    /**
+     * Grabs a response synchronously from KickEndpoints.CHANNELS.url using OkHttpClient and parses the json response then maps it to a Livestream record
+     * @param slug streamer username with minimized set of symbols
+     * @return Livestream record instance
+     */
+    public Livestream getLivestreamSync(String slug){
+        try(val response = rClient.newCall(new Request.Builder().url(CHANNELS.url.concat(slug)).get().build()).execute()){
+            assert response.body() != null;
+            return mapper.readValue(response.body().string(), Channel.class).livestream();
+        } catch (IOException e) {
+            log.error("could not send fetch {}'s; {}", slug, e.getMessage());
+            return null;
+        }
+    }
 
-
+    /**
+     *
+     * @param chatroomId
+     * @param socketId
+     * @return
+     */
     @Override
     public String authorize(String chatroomId, String socketId) {
         try {
             return requestToken(chatroomId, socketId).get();
         } catch (InterruptedException | ExecutionException e) {
-            log.severe("could not execute requestToken; " + e);
+            log.error("could not execute requestToken; {}", e.getMessage());
             return null;
         }
     }
@@ -100,23 +150,19 @@ public class KickClient implements ChannelAuthorizer {
                    "channel_name": "%s"
                    }
                     """.formatted(socketId, chatroomId), MediaType.parse("application/json"))).build()).execute()){
+                assert response.body() != null;
                 return response.body().string();
         } catch (IOException e) {
-                log.severe("could not send token request; " + e);
+                log.error("could not send token request; {}", e.getMessage());
                 return "";
             }}, executor).thenApply(json -> {
             try {
                 return mapper.readValue(json, PusherAuthTokenResponse.class).auth();
             } catch (JsonProcessingException e) {
-                log.severe("could not process json token; " + e);
+                log.error("could not process json token; {}", e.getMessage());
                 return "";
             }
         });
 
     }
-
-    public CompletableFuture<String> getToken(){
-        return null;
-    }
 }
-

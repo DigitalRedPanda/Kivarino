@@ -18,7 +18,6 @@ import static com.digiunion.kick.util.KickEndpoints.CHANNELS;
  */
 @Slf4j
 public final class Main {
-//    private static final Logger log = LoggerFactory.getLogger(Main.class);
     /**
      * examines concurrency implementation with CompletableFutures
      * @param args: String[]
@@ -38,7 +37,7 @@ public final class Main {
         val channel8 = client.getChannel("migren2009").thenAccept(System.out::println);
         CompletableFuture.allOf(channel1, channel2, channel3, channel4, channel5, channel6, channel7, channel8).join();
         var time2 = System.currentTimeMillis();
-        log.info("executed for {}ms", time2 - time1);
+        log.error("executed for {}ms", time2 - time1);
         val clientS = new OkHttpClient.Builder().build();
         time1 = System.currentTimeMillis();
         try(val response = clientS.newCall(new Request.Builder().url(CHANNELS.url.concat("copynine")).get().build()).execute()) {

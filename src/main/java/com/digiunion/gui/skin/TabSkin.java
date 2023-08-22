@@ -9,13 +9,17 @@ import javafx.scene.control.Control;
 import javafx.scene.control.skin.ButtonSkin;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.util.Duration;
+import lombok.Getter;
 import lombok.val;
 
 
 public class TabSkin  extends ButtonSkin {
-    private final Color defaultColor = Color.web("#404446");
-    private final Color endColor = Color.web("#54626F");
+//    private final Color defaultColor = Color.web("#404446");
+//    private final Color endColor = Color.web("#54626F");
+    @Getter
+    private final Circle liveCircle;
     /**
      * Creates a new ButtonSkin instance, installing the necessary child
      * nodes into the Control {@link Control#getChildren() children} list, as
@@ -25,26 +29,44 @@ public class TabSkin  extends ButtonSkin {
      */
     public TabSkin(Button control) {
         super(control);
+        liveCircle = new Circle();
+        liveCircle.setFill(Color.RED);
+        liveCircle.setRadius(0);
+        liveCircle.setVisible(false);
+        control.setGraphic(liveCircle);
         val colorAdjust = new ColorAdjust();
         colorAdjust.setBrightness(0.0);
         control.setEffect(colorAdjust);
         control.setOnMouseEntered(e -> {
-            val fadeInTimeline = new Timeline(
-                new KeyFrame(Duration.ZERO,
-                    new KeyValue(colorAdjust.brightnessProperty(), colorAdjust.brightnessProperty().getValue(), Interpolator.EASE_BOTH)),
-                new KeyFrame(Duration.millis(100),
-                    new KeyValue(colorAdjust.brightnessProperty(), 0.25, Interpolator.EASE_BOTH)
-                ));
-            System.out.println("lmao");
-            fadeInTimeline.play();
+            if(!control.focusedProperty().get()){
+               val fadeInTimeline = new Timeline(
+                   new KeyFrame(Duration.ZERO,
+                       new KeyValue(colorAdjust.brightnessProperty(), colorAdjust.brightnessProperty().getValue(), Interpolator.EASE_BOTH)),
+                   new KeyFrame(Duration.millis(100),
+                       new KeyValue(colorAdjust.brightnessProperty(), 0.25, Interpolator.EASE_BOTH)
+                   ));
+               fadeInTimeline.play();
+            }
         });
         control.setOnMouseExited(e -> {
-            val fadeOutTimeline = new Timeline(
-                new KeyFrame(Duration.ZERO,
-                    new KeyValue(colorAdjust.brightnessProperty(), colorAdjust.brightnessProperty().getValue(), Interpolator.EASE_BOTH)),
-                new KeyFrame(Duration.millis(100), new KeyValue(colorAdjust.brightnessProperty(), 0, Interpolator.EASE_BOTH)
+            if(!control.focusedProperty().get()) {
+                val fadeOutTimeline = new Timeline(
+                    new KeyFrame(Duration.ZERO,
+                        new KeyValue(colorAdjust.brightnessProperty(), colorAdjust.brightnessProperty().getValue(), Interpolator.EASE_BOTH)),
+                    new KeyFrame(Duration.millis(100), new KeyValue(colorAdjust.brightnessProperty(), 0, Interpolator.EASE_BOTH)
                 ));
-            fadeOutTimeline.play();
+                fadeOutTimeline.play();
+            }
+        });
+        control.focusedProperty().addListener(event -> {
+            if(control.focusedProperty().get()){
+                colorAdjust.setBrightness(0.25);
+                control.setStyle("-fx-background-color: #0B6623;");
+            }
+            else {
+                colorAdjust.setBrightness(0);
+                control.setStyle("-fx-background-color: #404446;");
+            }
         });
         System.out.println(control.getFont().getName());
 //        val colorInput = new ColorInput();

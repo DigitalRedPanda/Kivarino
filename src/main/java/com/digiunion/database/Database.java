@@ -31,20 +31,24 @@ public class Database implements Closeable {
         properties.put("username",dotenv.get("USERNAME"));
         properties.put("password",dotenv.get("PASSWORD"));
         try {
+            https://stream.kick.com//thumbnails//livestream//12403962//thumb0//video_thumbnail//thumb0.jpg
             connection1 = DriverManager.getConnection("jdbc:h2:file:kivarino.db", properties);
             log.info("database connection has been established {}", connection1.getCatalog());
             connection1.createStatement().execute("""
                 CREATE TABLE IF NOT EXIST channels(
                 id INT PRIMARY KEY,
                 slug VARCHAR(30) UNIQUE NOT NULL,
+                user_id int FOREIGN KEY REFERENCES users(user_id),
+                chatroom_id int FOREIGN KEY REFERENCES chatrooms(chatroom_id),
+                livestream VARCHAR
                 );
-                CREATE TABLE IF NOT EXIST user(
+                CREATE TABLE IF NOT EXIST users(
                 id INT PRIMARY KEY,
                 name VARCHAR(30) NOT NULL
                 );
-                CREATE TABLE livestream(
-                thumbnail STRING,
-
+                CREATE TABLE IF NOT EXIST chatrooms(
+                id INT PRIMARY KEY,
+                chatable_id INT UNIQUE NOT NULL
                 );
                 """);
         } catch (SQLException e) {
