@@ -20,7 +20,7 @@ public class KickWebsocket implements Closeable {
     private final KickClient client = new KickClient();
     private final Pusher pusher;
 
-    private final List<Channel> channelList = new ArrayList<Channel>();
+    private final List<Channel> channelList = new ArrayList<>();
     private final static String viteRecapchaSiteKey = "6LfW60MjAAAAAKJlV_IW6cYl63zpKNuI4EMkxR9b";
     private final static String vitePuserAppKey = "eb1d5f283081a78b932c";
     private final static String vitePusherAppCluster = "us2";

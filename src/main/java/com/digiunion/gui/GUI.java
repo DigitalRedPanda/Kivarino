@@ -10,7 +10,7 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.java.Log;
 import lombok.val;
 
 import java.util.ArrayList;
@@ -19,7 +19,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-@Slf4j
+@Log
 public class GUI extends Application {
 
     private Scene scene;
@@ -35,17 +35,19 @@ public class GUI extends Application {
         gridPane.setVgap(1);
         gridPane.setHgap(1);
         val channels = new String[]{
-            "dote","narash","quillcannon","rowex", "rustytheowl", "abodrp","sadmadladsalman","xqc"
+            "dote","narash","quillcannon","rowex", "rustytheowl", "abodrp","sadmadladsalman","migren2009"
         };
+        gridPane.widthProperty().addListener(event -> System.out.println(gridPane.widthProperty().get()));
         val futures = new ArrayList<>(Arrays.stream(channels).map(channel -> client.getChannel(channel).thenApply(channel1 -> toButton(channel1.user().name().toLowerCase()))).toList());
         CompletableFuture.allOf(futures.toArray(CompletableFuture<?>[]::new));
         for (var i = 0; i < futures.size(); i++) {
             try {
                 gridPane.add(futures.get(i).get(), i, 0);
             } catch (InterruptedException | ExecutionException e) {
-                log.error("could not get CompletableFuture<Button>; {}", e.getMessage());
+                log.severe("could not get CompletableFuture<Button>; %s".formatted(e.getMessage()));
             }
         }
+        System.out.println(gridPane.getWidth());
 //        gridPane.addRow(0, channel1.join(), channel2.join(), channel3.join(), channel4.join(), channel5.join());
 //            System.out.println(channel2.get().getFont().getName());
 //        val image = new ImageView(new Image(client.getLivestream("narash").join().thumbnail().url()));
@@ -60,9 +62,7 @@ public class GUI extends Application {
 //        fillTransition.setToValue(Color.web("#54626F"));
 //        fillTransition.setCycleCount(FillTransition.INDEFINITE);
 //        fillTransition.playFromStart();
-        gridPane.widthProperty().addListener(event -> {
 
-        });
         scene = new Scene(gridPane, 600, 800);
         scene.getStylesheets().add("main.css");
         scene.setFill(Color.valueOf("#36393e"));
@@ -72,7 +72,7 @@ public class GUI extends Application {
         primaryStage.getIcons().add(new Image("Kivarino.png"));
         primaryStage.setTitle("Kivarino");
         primaryStage.show();
-        client.getExecutor().execute(()->{
+        client.getExecutor().execute(() -> {
             while (true) try {
                 for (var i = 0; i < futures.size(); i++) {
                     val skin = (TabSkin) futures.get(i).get().getSkin();
@@ -89,7 +89,7 @@ public class GUI extends Application {
                 System.out.println("looking for live channels");
                 TimeUnit.SECONDS.sleep(15);
             } catch (InterruptedException | ExecutionException e) {
-                log.error("could not sleep live eventListener; {}", e.getMessage());
+                log.severe("could not sleep live eventListener; %s".formatted(e.getMessage()));
             }
         });
     }

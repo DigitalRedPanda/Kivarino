@@ -33,6 +33,7 @@ public class TabSkin  extends ButtonSkin {
         liveCircle.setFill(Color.RED);
         liveCircle.setRadius(0);
         liveCircle.setVisible(false);
+
         control.setGraphic(liveCircle);
         val colorAdjust = new ColorAdjust();
         colorAdjust.setBrightness(0.0);
@@ -68,7 +69,8 @@ public class TabSkin  extends ButtonSkin {
                 control.setStyle("-fx-background-color: #404446;");
             }
         });
-        System.out.println(control.getFont().getName());
+
+//        System.out.println(control.getFont().getName());
 //        val colorInput = new ColorInput();
 //        colorInput.setPaint(defaultColor);
 //        control.setEffect(colorInput);
