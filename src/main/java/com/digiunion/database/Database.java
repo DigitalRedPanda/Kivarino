@@ -5,7 +5,6 @@ import com.digiunion.kick.model.*;
 import lombok.Getter;
 import lombok.extern.java.Log;
 import lombok.val;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.Closeable;
 import java.sql.Connection;
@@ -64,11 +63,62 @@ public class Database implements Closeable {
         }
     }
 
-    public boolean insertAllChannels(List<Channel> list) {
-        val builder = getStringBuilder(list.get(0));
-        for (var i = 1; i < list.size(); i++) {
-            insertChannelSafe(list.get(i), builder);
+    public boolean insertChannel(Channel channel) {
+        try(val statement = connection.createStatement()){
+            val result = getStringBuilder(channel, channel.user(), channel.livestream());
+            result.append(";");
+            return statement.execute(result.toString());
+        } catch (SQLException e) {
+            log.severe("could not insert %s; %s".formatted(channel.slug(), e.getMessage()));
+            return false;
         }
+    }
+
+    private static StringBuilder getStringBuilder(Channel channel, User user, Livestream livestream) {
+        StringBuilder result = new StringBuilder();
+        if(livestream == null) {
+            result.append("INSERT INTO channels VALUES(")
+                .append(channel.id())
+                .append(", '")
+                .append(channel.slug())
+                .append("', ")
+                .append("null")
+                .append(", ")
+                .append(0)
+                .append(", ")
+                .append(user.id())
+                .append(", '")
+                .append(user.name())
+                .append("', ")
+                .append(channel.chatroom().id())
+                .append(")");
+        }
+        else
+            // "INSERT INTO channels VALUES (%d, '%s', '%s', %d, %d, '%s', %d)"
+            result.append("INSERT INTO channels VALUES (")
+                .append(channel.id())
+                .append(", '")
+                .append(channel.slug())
+                .append("', '")
+                .append(livestream.thumbnail().url())
+                .append("', ")
+                .append(livestream.viewerCount())
+                .append(", ")
+                .append(user.id())
+                .append(", '")
+                .append(user.name())
+                .append("', ")
+                .append(channel.chatroom().id())
+                .append(")");
+
+        return result;
+    }
+
+    public boolean insertAllChannels(List<Channel> list){
+        val first = list.get(0);
+        val builder = getStringBuilder(first, first.user(), first.livestream());
+        for (var i = 1; i < list.size(); i++)
+            insertChannelSafe(list.get(i), builder);
         try(val statement = connection.createStatement()){
             return statement.execute(builder.toString());
         } catch (SQLException e) {
@@ -76,27 +126,79 @@ public class Database implements Closeable {
             return false;
         }
     }
-
-    @NotNull
-    private static StringBuilder getStringBuilder(Channel first) {
-        StringBuilder builder;
-        val user = first.user();
-        val livestream = first.livestream();
-        if(livestream == null)
-            builder = new StringBuilder("INSERT INTO channels VALUES(%d, '%s', null, 0, %d, '%s', %d)".formatted(first.id(), first.slug(), user.id(), user.name(), first.chatroom().id()));
-        else
-            builder = new StringBuilder("INSERT INTO channels VALUES(%d, '%s', '%s', %d, %d, '%s', %d)".formatted(first.id(), first.slug(), livestream.thumbnail(), livestream.viewerCount(), user.id(), user.name(), first.chatroom().id()));
-
-        return builder;
-    }
+//
+//    @NotNull
+//    private static StringBuilder getStringBuilder(Channel first) {
+//        val builder = new StringBuilder();
+//        val user = first.user();
+//        val livestream = first.livestream();
+//        if(livestream == null)
+//             builder.append("INSERT INTO channels(id, slug, user_id, username, chatroom_id) VALUES(")
+//                 .append(first.id())
+//                 .append(", '")
+//                 .append(first.slug())
+//                 .append("', ")
+//                 .append(user.id())
+//                 .append(", '")
+//                 .append(user.name())
+//                 .append("', ")
+//                 .append(first.chatroom().id())
+//                 .append(")");
+//        else
+//            builder.append("INSERT INTO channels VALUES (")
+//                .append(first.id())
+//                .append(", '")
+//                .append(first.slug())
+//                .append("', '")
+//                .append(livestream.thumbnail().url())
+//                .append("', ").append(livestream.viewerCount())
+//                .append(", ")
+//                .append(user.id())
+//                .append(", '")
+//                .append(user.name())
+//                .append("', ")
+//                .append(first.chatroom().id())
+//                .append(")");
+//        return builder;
+//    }
 
     private void insertChannelSafe(Channel channel, StringBuilder builder){
         val livestream = channel.livestream();
         val user = channel.user();
-        if(channel.livestream() == null)
-            builder.append(",(%d, '%s', null, 0, %d, '%s', %d)".formatted(channel.id(), channel.slug(), user.id(), user.name(), channel.chatroom().id()));
-        else
-            builder.append(",(%d, '%s', '%s', %d, %d, '%s', %d)".formatted(channel.id(), channel.slug(), livestream.thumbnail(), livestream.viewerCount(), user.id(), user.name(), channel.chatroom().id()));
+        if(channel.livestream() == null) {
+            builder.append(",(")
+                .append(channel.id())
+                .append(", '")
+                .append(channel.slug())
+                .append("', ")
+                .append("null")
+                .append(", ")
+                .append(0)
+                .append(", ")
+                .append(user.id())
+                .append(", '")
+                .append(user.name())
+                .append("', ")
+                .append(channel.chatroom().id())
+                .append(")");
+        }
+        else {
+            builder.append(",(")
+                .append(channel.id())
+                .append(", '")
+                .append(channel.slug())
+                .append("', '")
+                .append(livestream.thumbnail().url())
+                .append("', ")
+                .append(livestream.viewerCount())
+                .append(", ")
+                .append(user.id())
+                .append(", '")
+                .append(user.name())
+                .append("', ")
+                .append(channel.chatroom().id())
+                .append(")");
+        }
     }
 
     public boolean deleteAllChannels(){

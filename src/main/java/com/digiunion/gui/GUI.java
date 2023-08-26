@@ -25,7 +25,7 @@ public class GUI extends Application {
 
     private final Database database = Database.getInstance();
     @Override
-    public void start(Stage primaryStage) {
+    public void start(Stage primaryStage) throws InterruptedException {
         Main.main(null);
         val gridPane = new GridPane();
         gridPane.setStyle("""
@@ -36,7 +36,12 @@ public class GUI extends Application {
         gridPane.setHgap(1);
         val channels = database.getAllChannels();
         channels.forEach(System.out::println);
-        gridPane.widthProperty().addListener(event -> System.out.println(gridPane.widthProperty().get()));
+        gridPane.widthProperty().addListener(event ->{
+            System.out.println(gridPane.widthProperty().get());
+            if(false){
+
+            }
+        });
         val futures = channels.stream().map(channel -> toButton(channel.user().name().toLowerCase())).toList();
         for (var i = 0; i < futures.size(); i++)
             gridPane.add(futures.get(i), i, 0);
@@ -82,7 +87,7 @@ public class GUI extends Application {
                 System.out.println("looking for live channels");
                 TimeUnit.SECONDS.sleep(15);
             } catch (InterruptedException e) {
-                log.severe("could not sleep live eventListener; %s".formatted(e.getMessage()));
+                log.severe("could not sleep live eventListener; " + e.getMessage());
             }
         });
     }

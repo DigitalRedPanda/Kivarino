@@ -33,7 +33,6 @@ public class TabSkin  extends ButtonSkin {
         liveCircle.setFill(Color.RED);
         liveCircle.setRadius(0);
         liveCircle.setVisible(false);
-
         control.setGraphic(liveCircle);
         val colorAdjust = new ColorAdjust();
         colorAdjust.setBrightness(0.0);

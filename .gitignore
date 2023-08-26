@@ -1,4 +1,7 @@
 /target
 *.env
+*.db
+*.db.mv.db
+*.db.trace.db
 .editorconfig
 /.idea

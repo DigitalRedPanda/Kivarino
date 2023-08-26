@@ -39,7 +39,7 @@ public class KickClient implements ChannelAuthorizer {
 
     public KickClient(){
         mapper = new ObjectMapper();
-        executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() / 2);
+        executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() >> 1);
     }
 
     /**
