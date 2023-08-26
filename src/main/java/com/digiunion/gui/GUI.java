@@ -1,5 +1,7 @@
 package com.digiunion.gui;
 
+import com.digiunion.Main;
+import com.digiunion.database.Database;
 import com.digiunion.gui.skin.TabSkin;
 import com.digiunion.kick.KickClient;
 import javafx.application.Application;
@@ -13,10 +15,6 @@ import javafx.stage.Stage;
 import lombok.extern.java.Log;
 import lombok.val;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 @Log
@@ -25,8 +23,10 @@ public class GUI extends Application {
     private Scene scene;
     private final KickClient client = new KickClient();
 
+    private final Database database = new Database();
     @Override
     public void start(Stage primaryStage) {
+        Main.main(null);
         val gridPane = new GridPane();
         gridPane.setStyle("""
             -fx-background-color: #36393e;
@@ -34,19 +34,12 @@ public class GUI extends Application {
         gridPane.setAlignment(Pos.TOP_LEFT);
         gridPane.setVgap(1);
         gridPane.setHgap(1);
-        val channels = new String[]{
-            "dote","narash","quillcannon","rowex", "rustytheowl", "abodrp","sadmadladsalman","migren2009"
-        };
+        val channels = database.getAllChannels();
+        channels.forEach(System.out::println);
         gridPane.widthProperty().addListener(event -> System.out.println(gridPane.widthProperty().get()));
-        val futures = new ArrayList<>(Arrays.stream(channels).map(channel -> client.getChannel(channel).thenApply(channel1 -> toButton(channel1.user().name().toLowerCase()))).toList());
-        CompletableFuture.allOf(futures.toArray(CompletableFuture<?>[]::new));
-        for (var i = 0; i < futures.size(); i++) {
-            try {
-                gridPane.add(futures.get(i).get(), i, 0);
-            } catch (InterruptedException | ExecutionException e) {
-                log.severe("could not get CompletableFuture<Button>; %s".formatted(e.getMessage()));
-            }
-        }
+        val futures = channels.stream().map(channel -> toButton(channel.user().name().toLowerCase())).toList();
+        for (var i = 0; i < futures.size(); i++)
+            gridPane.add(futures.get(i), i, 0);
         System.out.println(gridPane.getWidth());
 //        gridPane.addRow(0, channel1.join(), channel2.join(), channel3.join(), channel4.join(), channel5.join());
 //            System.out.println(channel2.get().getFont().getName());
@@ -75,8 +68,8 @@ public class GUI extends Application {
         client.getExecutor().execute(() -> {
             while (true) try {
                 for (var i = 0; i < futures.size(); i++) {
-                    val skin = (TabSkin) futures.get(i).get().getSkin();
-                    val livestream = client.getLivestreamSync(channels[i]);
+                    val skin = (TabSkin) futures.get(i).getSkin();
+                    val livestream = client.getLivestreamSync(channels.get(i).slug());
                     if (livestream != null && !skin.getLiveCircle().isVisible()){
                         skin.getLiveCircle().setRadius(2);
                         skin.getLiveCircle().setVisible(true);
@@ -88,7 +81,7 @@ public class GUI extends Application {
                 }
                 System.out.println("looking for live channels");
                 TimeUnit.SECONDS.sleep(15);
-            } catch (InterruptedException | ExecutionException e) {
+            } catch (InterruptedException e) {
                 log.severe("could not sleep live eventListener; %s".formatted(e.getMessage()));
             }
         });
