@@ -23,7 +23,7 @@ public class GUI extends Application {
     private Scene scene;
     private final KickClient client = new KickClient();
 
-    private final Database database = new Database();
+    private final Database database = Database.getInstance();
     @Override
     public void start(Stage primaryStage) {
         Main.main(null);

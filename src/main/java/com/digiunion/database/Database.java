@@ -20,6 +20,9 @@ public class Database implements Closeable {
     @Getter
     private static final Connection connection;
 
+    @Getter
+    private static final Database instance = new Database();
+
     static {
         Connection temp;
         try {
