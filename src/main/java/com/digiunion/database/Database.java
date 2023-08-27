@@ -12,6 +12,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Log
 public class Database implements Closeable {
@@ -63,8 +64,25 @@ public class Database implements Closeable {
         }
     }
 
+    public Optional<Channel> getChannel(String slug){
+        try(val statement = connection.createStatement()) {
+            val result = statement.executeQuery("SELECT * FROM channels WHERE slug = '" + slug + "';");
+            result.next();
+            val thumbnail = result.getString(3);
+            if(thumbnail == null) {
+                return Optional.of(new Channel(result.getInt(1), result.getString(2), null, new User(result.getInt(5), result.getString(6)), new Chatroom(result.getInt(7))));
+            } else {
+                return Optional.of(new Channel(result.getInt(1), result.getString(2), new Livestream(new Thumbnail(thumbnail), result.getInt(4)), new User(result.getInt(5), result.getString(6)), new Chatroom(result.getInt(7))));
+            }
+
+        } catch (SQLException e) {
+            log.info("could not get %s; %s".formatted(slug, e.getMessage()));
+            return Optional.empty();
+        }
+    }
+
     public boolean insertChannel(Channel channel) {
-        try(val statement = connection.createStatement()){
+        try(val statement = connection.createStatement()) {
             val result = getStringBuilder(channel, channel.user(), channel.livestream());
             result.append(";");
             return statement.execute(result.toString());
@@ -220,5 +238,13 @@ public class Database implements Closeable {
 
     @Override
     public void close() {
+        Optional<String> catalog = Optional.empty();
+        try {
+            catalog = Optional.ofNullable(connection.getCatalog());
+            catalog.ifPresent(s -> log.info("closing connection of " + s));
+            connection.close();
+        } catch (SQLException e) {
+            log.severe("could not close connection of %s; %s".formatted(catalog.orElse("not found"), e.getMessage()));
+        }
     }
 }

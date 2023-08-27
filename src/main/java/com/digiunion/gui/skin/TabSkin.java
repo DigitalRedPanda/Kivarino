@@ -34,6 +34,7 @@ public class TabSkin  extends ButtonSkin {
         liveCircle.setRadius(0);
         liveCircle.setVisible(false);
         control.setGraphic(liveCircle);
+//        control.setFont(new Font("fonts/Roobert-Regular.ttf", 0));
         val colorAdjust = new ColorAdjust();
         colorAdjust.setBrightness(0.0);
         control.setEffect(colorAdjust);
@@ -69,7 +70,8 @@ public class TabSkin  extends ButtonSkin {
             }
         });
 
-//        System.out.println(control.getFont().getName());
+
+        System.out.println(control.getFont().getName());
 //        val colorInput = new ColorInput();
 //        colorInput.setPaint(defaultColor);
 //        control.setEffect(colorInput);
