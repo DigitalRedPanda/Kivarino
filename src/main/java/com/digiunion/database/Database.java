@@ -81,7 +81,7 @@ public class Database implements Closeable {
         }
     }
 
-    public boolean insertChannel(Channel channel) {
+    public synchronized boolean insertChannel(Channel channel) {
         try(val statement = connection.createStatement()) {
             val result = getStringBuilder(channel, channel.user(), channel.livestream());
             result.append(";");

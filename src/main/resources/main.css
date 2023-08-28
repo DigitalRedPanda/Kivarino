@@ -5,14 +5,19 @@ src: url('fonts/Roobert-Regular.ttf);
 
 .root{
 }
-.button {
+.button{
 -fx-text-fill: white;
 -fx-font-size: 15px;
-/*-fx-font-family: 'Roobert-Regular';*/
--fx-skin: 'com.digiunion.gui.skin.TabSkin';
--fx-background-color: #404446;
 -fx-background-radius: 0px;
 -fx-font-weight: 200;
+/*-fx-font-family: 'Roobert-Regular';*/
+}
+#tab {
+-fx-background-color: #404446;
+-fx-skin: 'com.digiunion.gui.skin.TabSkin';
+}
+#add-button{
+-fx-background-color: #36393e;
 }
 /*.button:hover{
 -fx-background-color: #54626F;

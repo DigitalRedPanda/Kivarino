@@ -2,12 +2,12 @@ package com.digiunion.gui;
 
 import com.digiunion.Main;
 import com.digiunion.database.Database;
+import com.digiunion.gui.component.Tab;
+import com.digiunion.gui.skin.AddButtonSkin;
 import com.digiunion.gui.skin.TabSkin;
 import com.digiunion.kick.KickClient;
 import javafx.application.Application;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.StackPane;
@@ -28,24 +28,31 @@ public class GUI extends Application {
     private final KickClient client = new KickClient();
 
     private final Database database = Database.getInstance();
+
+    @Getter
+    private static final Image icon = new Image("Kivarino.png");
     @Override
     public void start(Stage primaryStage) throws InterruptedException {
         Main.main(null);
         val stackPane = new StackPane();
-        stackPane.setStyle("""
-            -fx-background-color: #36393e;
-            """);
+        stackPane.setStyle("-fx-background-color: #36393e;");
+        val addButton = new Tab("+");
+        addButton.setId("add-button");
         val flow = new FlowPane();
-        flow.setAlignment(Pos.TOP_LEFT);
+        //this is supposed to be the default setting
+//        flow.setAlignment(Pos.TOP_LEFT);
         flow.setHgap(1);
         flow.setVgap(1);
+        addButton.setSkin(new AddButtonSkin(addButton, flow));
         val channels = database.getAllChannels();
-        val futures = new ArrayList<Button>(channels.size());
+        val buttons = new ArrayList<Tab>(channels.size());
         for (var channel : channels) {
             val button = toButton(channel.user().name().toLowerCase());
-            futures.add(button);
+            buttons.add(button);
             flow.getChildren().add(button);
         }
+        flow.getChildren().add(addButton);
+
         stackPane.getChildren().add(flow);
         scene = new Scene(stackPane, 600, 800);
         // load css at the root directory of the jar file
@@ -54,14 +61,14 @@ public class GUI extends Application {
         primaryStage.setScene(scene);
         primaryStage.setMinWidth(400);
         primaryStage.setMinHeight(800);
-        primaryStage.getIcons().add(new Image("Kivarino.png"));
+        primaryStage.getIcons().add(icon);
         primaryStage.setTitle("Kivarino");
         primaryStage.show();
         primaryStage.setOnCloseRequest(event -> System.exit(0));
         client.getExecutor().execute(() -> {
             do try {
-                for (var i = 0; i < futures.size(); i++) {
-                    val skin = (TabSkin) futures.get(i).getSkin();
+                for (var i = 0; i < buttons.size(); i++) {
+                    val skin = (TabSkin) buttons.get(i).getSkin();
                     val livestream = client.getLivestreamSync(channels.get(i).slug());
                     if (livestream != null && !skin.getLiveCircle().isVisible()) {
                         skin.getLiveCircle().setRadius(2);
@@ -79,8 +86,9 @@ public class GUI extends Application {
             while (true);
         });
     }
-
-    private Button toButton(String text){
-        return new Button(text);
+    private Tab toButton(String text){
+        val button = new Tab(text);
+        button.setId("tab");
+        return button;
     }
 }
