@@ -166,9 +166,7 @@ public class KickClient implements ChannelAuthorizer {
     public CompletableFuture<String> requestToken(String channelName, String socketId){
         return CompletableFuture.supplyAsync(() -> {
             client.set(rClient);
-            val builder = new StringBuilder();
-            builder.append("{\"socket_id\": \"").append(socketId)
-                .append("\",\"channel_name\": \"").append(channelName).append("\"}");
+            val builder = new StringBuilder().append("{\"socket_id\": \"").append(socketId).append("\",\"channel_name\": \"").append(channelName).append("\"}");
             try(val response = client.get().newCall(new Request.Builder()
                 .url(new URL(BASE_URL.url.concat("broadcasting/auth")))
                 .post(RequestBody.create(builder.toString(), MediaType.parse("application/json"))).build()).execute()){

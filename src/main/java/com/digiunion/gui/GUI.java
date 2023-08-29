@@ -1,11 +1,12 @@
 package com.digiunion.gui;
 
-import com.digiunion.Main;
 import com.digiunion.database.Database;
-import com.digiunion.gui.component.Tab;
 import com.digiunion.gui.skin.AddButtonSkin;
+import com.digiunion.gui.skin.RemoveButtonSkin;
 import com.digiunion.gui.skin.TabSkin;
 import com.digiunion.kick.KickClient;
+import com.digiunion.kick.model.Channel;
+import com.digiunion.kick.model.Livestream;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -32,9 +33,13 @@ public class GUI extends Application {
     private static final Database database = Database.getInstance();
     @Getter
     private static final Image icon = new Image("Kivarino.png");
+    @Getter
+    private static final ArrayList<Channel> channels = database.getAllChannels();
+    @Getter
+    private static final ArrayList<Button> buttons = new ArrayList<>();
     @Override
     public void start(Stage primaryStage) throws InterruptedException {
-        Main.main(null);
+        database.deleteAllChannels();
         val stackPane = new StackPane();
         stackPane.setStyle("-fx-background-color: #36393e;");
         val addButton = new Button("+");
@@ -45,15 +50,14 @@ public class GUI extends Application {
         flow.setHgap(1);
         flow.setVgap(1);
         addButton.setSkin(new AddButtonSkin(addButton, flow));
-        val channels = database.getAllChannels();
-        val buttons = new ArrayList<Tab>(channels.size());
         for (var channel : channels) {
-            val button = toButton(channel.user().name().toLowerCase());
+            val button = toButton(channel.slug());
+            val remover = new Button("x");
+            remover.setSkin(new RemoveButtonSkin(button, remover, flow));
             buttons.add(button);
             flow.getChildren().add(button);
         }
         flow.getChildren().add(addButton);
-
         stackPane.getChildren().add(flow);
         scene = new Scene(stackPane, 600, 800);
         // load css at the root directory of the jar file
@@ -67,10 +71,12 @@ public class GUI extends Application {
         primaryStage.show();
         primaryStage.setOnCloseRequest(event -> System.exit(0));
         client.getExecutor().execute(() -> {
-            do try {
+            while (true) try {
+                Livestream livestream;
+                TabSkin skin;
                 for (var i = 0; i < buttons.size(); i++) {
-                    val skin = (TabSkin) buttons.get(i).getSkin();
-                    val livestream = client.getLivestreamSync(channels.get(i).slug());
+                    livestream = channels.get(i).livestream();
+                    skin = (TabSkin) buttons.get(i).getSkin();
                     if (livestream != null && !skin.getLiveCircle().isVisible()) {
                         skin.getLiveCircle().setRadius(2);
                         skin.getLiveCircle().setVisible(true);
@@ -84,12 +90,12 @@ public class GUI extends Application {
             } catch (InterruptedException e) {
                 log.severe("could not sleep live eventListener; " + e.getMessage());
             }
-            while (true);
         });
     }
-    private Tab toButton(String text){
-        val button = new Tab(text);
+    private Button toButton(String text){
+        val button = new Button(text);
         button.setId("tab");
+
         return button;
     }
 }

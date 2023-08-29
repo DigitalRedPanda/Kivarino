@@ -85,8 +85,7 @@ public class Database implements Closeable {
 
     public boolean insertChannel(Channel channel) {
         try(val statement = connection.createStatement()) {
-            val result = getStringBuilder(channel, channel.user(), channel.livestream());
-            result.append(";");
+            val result = getStringBuilder(channel, channel.user(), channel.livestream()).append(";");
             statement.execute(result.toString());
             return true;
         } catch (SQLException e) {
@@ -135,13 +134,14 @@ public class Database implements Closeable {
         return result;
     }
 
-    public boolean insertAllChannels(List<Channel> list){
+    public boolean insertAllChannels(List<Channel> list) {
         val first = list.get(0);
         val builder = getStringBuilder(first, first.user(), first.livestream());
         for (var i = 1; i < list.size(); i++)
             insertChannelSafe(list.get(i), builder);
         try(val statement = connection.createStatement()){
-            return statement.execute(builder.toString());
+            statement.execute(builder.toString());
+            return true;
         } catch (SQLException e) {
             log.severe("could not insert channels; " + e.getMessage());
             return false;
@@ -224,7 +224,8 @@ public class Database implements Closeable {
 
     public boolean deleteAllChannels(){
         try(val statement = connection.createStatement()){
-            return statement.execute("delete FROM channels;");
+            statement.execute("DELETE FROM channels;");
+            return true;
         } catch (SQLException e) {
             log.severe("couldn't delete all channels; " + e.getMessage());
             return false;
@@ -232,7 +233,8 @@ public class Database implements Closeable {
     }
     public boolean dropChannels(){
         try(val statement = connection.createStatement()){
-            return statement.execute("DROP TABLE channels;");
+            statement.execute("DROP TABLE channels;");
+            return true;
         } catch (SQLException e) {
             log.severe("couldn't drop channels table; " + e.getMessage());
             return false;
