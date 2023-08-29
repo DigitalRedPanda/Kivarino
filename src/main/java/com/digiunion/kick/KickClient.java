@@ -44,7 +44,7 @@ public class KickClient implements ChannelAuthorizer {
 
     /**
      * Grabs a response asynchronously from KickEndpoints.CHANNELS.url using a clone instance of OkHttpClient and parses the json response then maps it to a Channel record
-     * @param slug streamer username with minimized set of symbols
+     * @param slug streamer username with minimized set of symbols and lowercase letters; e.g. username: United_States_Of_Qassim, slug: united-states-of-qassim
      * @return CompletableFuture
      */
     public CompletableFuture<Channel> getChannel(@NonNull String slug) {
@@ -69,7 +69,7 @@ public class KickClient implements ChannelAuthorizer {
 
     /**
      * Grabs a response synchronously from KickEndpoints.CHANNELS.url using OkHttpClient and parses the json response then maps it to a Channel record
-     * @param slug streamer username with minimized set of symbols
+     * @param slug streamer username with minimized set of symbols and lowercase letters; e.g. username: United_States_Of_Qassim, slug: united-states-of-qassim
      * @return Channel
      */
     public Channel getChannelSync(String slug){
@@ -109,7 +109,7 @@ public class KickClient implements ChannelAuthorizer {
 
     /**
      * Grabs a response asynchronously from KickEndpoints.CHANNELS.url using a clone instance of OkHttpClient and parses the json response then maps it to a Livestream record
-     * @param slug streamer username with minimized set of symbols
+     * @param slug streamer username with minimized set of symbols and lowercase letters; e.g. username: United_States_Of_Qassim, slug: united-states-of-qassim
      * @return CompletableFuture
      */
     public CompletableFuture<Livestream> getLivestream(@NonNull String slug) {
@@ -134,7 +134,7 @@ public class KickClient implements ChannelAuthorizer {
 
     /**
      * Grabs a response synchronously from KickEndpoints.CHANNELS.url using OkHttpClient and parses the json response then maps it to a Livestream record
-     * @param slug streamer username with minimized set of symbols
+     * @param slug streamer username with minimized set of symbols and lowercase letters; e.g. username: United_States_Of_Qassim, slug: united-states-of-qassim
      * @return Livestream record instance
      */
     public Livestream getLivestreamSync(String slug){
@@ -149,31 +149,29 @@ public class KickClient implements ChannelAuthorizer {
 
     /**
      *
-     * @param chatroomId
+     * @param channelName
      * @param socketId
      * @return String Authorization token
      */
     @Override
-    public String authorize(String chatroomId, String socketId) {
+    public String authorize(String channelName, String socketId) {
         try {
-            return requestToken(chatroomId, socketId).get();
+            return requestToken(channelName, socketId).get();
         } catch (InterruptedException | ExecutionException e) {
             log.severe("could not execute requestToken; %s".formatted( e.getMessage()));
             return null;
         }
     }
 
-    public CompletableFuture<String> requestToken(String chatroomId, String socketId){
+    public CompletableFuture<String> requestToken(String channelName, String socketId){
         return CompletableFuture.supplyAsync(() -> {
             client.set(rClient);
+            val builder = new StringBuilder();
+            builder.append("{\"socket_id\": \"").append(socketId)
+                .append("\",\"channel_name\": \"").append(channelName).append("\"}");
             try(val response = client.get().newCall(new Request.Builder()
                 .url(new URL(BASE_URL.url.concat("broadcasting/auth")))
-                .post(RequestBody.create("""
-                   {
-                   "socket_id": "%s",
-                   "channel_name": "%s"
-                   }
-                    """.formatted(socketId, chatroomId), MediaType.parse("application/json"))).build()).execute()){
+                .post(RequestBody.create(builder.toString(), MediaType.parse("application/json"))).build()).execute()){
                 assert response.body() != null;
                 return response.body().string();
         } catch (IOException e) {

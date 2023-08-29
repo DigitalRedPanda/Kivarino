@@ -7,12 +7,15 @@ import javafx.animation.Timeline;
 import javafx.scene.control.Button;
 import javafx.scene.effect.ColorAdjust;
 import javafx.util.Duration;
+import lombok.Getter;
 import lombok.val;
 
 public class Tab extends Button {
+
+    @Getter
+    private final ColorAdjust colorAdjust = new ColorAdjust();
     public Tab(String text) {
         super(text);
-        val colorAdjust = new ColorAdjust();
         colorAdjust.setBrightness(0);
         setEffect(colorAdjust);
         setOnMouseEntered(e -> {

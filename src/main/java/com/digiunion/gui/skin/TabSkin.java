@@ -1,9 +1,8 @@
 package com.digiunion.gui.skin;
 
-import javafx.scene.control.Button;
+import com.digiunion.gui.component.Tab;
 import javafx.scene.control.Control;
 import javafx.scene.control.skin.ButtonSkin;
-import javafx.scene.effect.ColorAdjust;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import lombok.Getter;
@@ -22,16 +21,14 @@ public class TabSkin  extends ButtonSkin {
      *
      * @param control The control that this skin should be installed onto.
      */
-    public TabSkin(Button control) {
+    public TabSkin(Tab control) {
         super(control);
+        val colorAdjust = control.getColorAdjust();
         liveCircle = new Circle();
         liveCircle.setFill(Color.RED);
         liveCircle.setRadius(0);
         liveCircle.setVisible(false);
         control.setGraphic(liveCircle);
-        val colorAdjust = new ColorAdjust();
-        colorAdjust.setBrightness(0);
-        control.setEffect(colorAdjust);
         control.focusedProperty().addListener(event -> {
             if(control.focusedProperty().get()){
                 colorAdjust.setBrightness(0.25);

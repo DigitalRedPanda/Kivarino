@@ -65,27 +65,30 @@ public class Database implements Closeable {
     }
 
     public Optional<Channel> getChannel(String slug){
+        Optional<Channel> optional;
         try(val statement = connection.createStatement()) {
             val result = statement.executeQuery("SELECT * FROM channels WHERE slug = '" + slug + "';");
             result.next();
             val thumbnail = result.getString(3);
             if(thumbnail == null) {
-                return Optional.of(new Channel(result.getInt(1), result.getString(2), null, new User(result.getInt(5), result.getString(6)), new Chatroom(result.getInt(7))));
+                optional = Optional.of(new Channel(result.getInt(1), result.getString(2), null, new User(result.getInt(5), result.getString(6)), new Chatroom(result.getInt(7))));
             } else {
-                return Optional.of(new Channel(result.getInt(1), result.getString(2), new Livestream(new Thumbnail(thumbnail), result.getInt(4)), new User(result.getInt(5), result.getString(6)), new Chatroom(result.getInt(7))));
+                optional = Optional.of(new Channel(result.getInt(1), result.getString(2), new Livestream(new Thumbnail(thumbnail), result.getInt(4)), new User(result.getInt(5), result.getString(6)), new Chatroom(result.getInt(7))));
             }
 
         } catch (SQLException e) {
             log.info("could not get %s; %s".formatted(slug, e.getMessage()));
-            return Optional.empty();
+            optional = Optional.empty();
         }
+        return optional;
     }
 
-    public synchronized boolean insertChannel(Channel channel) {
+    public boolean insertChannel(Channel channel) {
         try(val statement = connection.createStatement()) {
             val result = getStringBuilder(channel, channel.user(), channel.livestream());
             result.append(";");
-            return statement.execute(result.toString());
+            statement.execute(result.toString());
+            return true;
         } catch (SQLException e) {
             log.severe("could not insert %s; %s".formatted(channel.slug(), e.getMessage()));
             return false;

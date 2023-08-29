@@ -8,6 +8,7 @@ import com.digiunion.gui.skin.TabSkin;
 import com.digiunion.kick.KickClient;
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.StackPane;
@@ -24,11 +25,11 @@ import java.util.concurrent.TimeUnit;
 public class GUI extends Application {
 
     @Getter
-    private Scene scene;
-    private final KickClient client = new KickClient();
-
-    private final Database database = Database.getInstance();
-
+    private static Scene scene;
+    @Getter
+    private static final KickClient client = new KickClient();
+    @Getter
+    private static final Database database = Database.getInstance();
     @Getter
     private static final Image icon = new Image("Kivarino.png");
     @Override
@@ -36,7 +37,7 @@ public class GUI extends Application {
         Main.main(null);
         val stackPane = new StackPane();
         stackPane.setStyle("-fx-background-color: #36393e;");
-        val addButton = new Tab("+");
+        val addButton = new Button("+");
         addButton.setId("add-button");
         val flow = new FlowPane();
         //this is supposed to be the default setting
