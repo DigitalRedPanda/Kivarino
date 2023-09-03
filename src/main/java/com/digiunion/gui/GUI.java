@@ -2,7 +2,6 @@ package com.digiunion.gui;
 
 import com.digiunion.database.Database;
 import com.digiunion.gui.skin.AddButtonSkin;
-import com.digiunion.gui.skin.RemoveButtonSkin;
 import com.digiunion.gui.skin.TabSkin;
 import com.digiunion.kick.KickClient;
 import com.digiunion.kick.model.Channel;
@@ -50,13 +49,14 @@ public class GUI extends Application {
         flow.setHgap(1);
         flow.setVgap(1);
         addButton.setSkin(new AddButtonSkin(addButton, flow));
-        for (var channel : channels) {
-            val button = toButton(channel.slug());
-            val remover = new Button("x");
-            remover.setSkin(new RemoveButtonSkin(button, remover, flow));
-            buttons.add(button);
-            flow.getChildren().add(button);
-        }
+        if(!channels.isEmpty())
+            for (var channel : channels) {
+                val button = toButton(channel.slug());
+//              val remover = new Button("x");
+//              remover.setSkin(new RemoveButtonSkin(button, remover, flow));
+                buttons.add(button);
+                flow.getChildren().add(button);
+            }
         flow.getChildren().add(addButton);
         stackPane.getChildren().add(flow);
         scene = new Scene(stackPane, 600, 800);
@@ -72,12 +72,14 @@ public class GUI extends Application {
         primaryStage.setOnCloseRequest(event -> System.exit(0));
         client.getExecutor().execute(() -> {
             while (true) try {
+                Channel channel;
                 Livestream livestream;
                 TabSkin skin;
                 for (var i = 0; i < buttons.size(); i++) {
-                    livestream = channels.get(i).livestream();
+                    channel = client.getChannelSync(channels.get(i).slug());
+                    livestream = channel.livestream();
                     skin = (TabSkin) buttons.get(i).getSkin();
-                    if (livestream != null && !skin.getLiveCircle().isVisible()) {
+                    if ((livestream != null) && !skin.getLiveCircle().isVisible()){
                         skin.getLiveCircle().setRadius(2);
                         skin.getLiveCircle().setVisible(true);
                     } else if (livestream == null && skin.getLiveCircle().isVisible()) {

@@ -1,4 +1,4 @@
-package com.digiunion.kick.websocket;
+package com.digiunion.kick.websocket.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 

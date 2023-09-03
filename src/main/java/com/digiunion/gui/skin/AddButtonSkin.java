@@ -76,7 +76,10 @@ public class AddButtonSkin extends ButtonSkin {
                         val option = client.getChannel(channelName.getText()).thenApply(Optional::ofNullable).join();
                         if(option.isPresent()){
                             val channelValue = option.get();
-                            if (database.insertChannel(option.get()) && !channelValue.slug().equals("damnbaldguy")) {
+                            if(channelValue.slug().equals("damnbaldguy")){
+                                error("this mf doesn't like beethoven").show();
+                            }
+                            else if (database.insertChannel(option.get()) && !channelValue.slug().equals("damnbaldguy")) {
                                 val tab = new Button(channelValue.slug());
                                 tab.setId("tab");
                                 tab.setSkin(new TabSkin(tab));
@@ -88,13 +91,11 @@ public class AddButtonSkin extends ButtonSkin {
                                 pane.getChildren().add(control);
                                 GUI.getButtons().add(tab);
                                 GUI.getChannels().add(channelValue);
-                            } else {
-                                error("this mf doesn't like beethoven").show();
                             }
                         } else {
-                            val error = error("could not add %s, either they were already added or they don't exist (delulu)".formatted(channelName.getText()));
-                            error.show();
-                        }});
+                            error("could not add %s, either they were already added or they don't exist (delulu)".formatted(channelName.getText())).show();
+                        }
+                    });
 //                } catch (InterruptedException | ExecutionException e){
 //                    log.severe("could not add %s channel; %s".formatted(channelName.getText(), e.getMessage()));
 //                }

@@ -5,17 +5,20 @@ import com.digiunion.kick.model.Channel;
 import com.pusher.client.Pusher;
 import com.pusher.client.PusherOptions;
 import lombok.extern.java.Log;
+import lombok.val;
 
 import java.io.Closeable;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
+import static com.pusher.client.connection.ConnectionState.DISCONNECTED;
+
 @Log
 public class KickWebsocket implements Closeable {
 
     private final KickClient client = new KickClient();
     private final Pusher pusher;
-
-    private final List<Channel> channelList = new ArrayList<>();
+    private final ArrayList<com.pusher.client.channel.Channel> subscribedChannels = new ArrayList<>();
     private final static String viteRecapchaSiteKey = "6LfW60MjAAAAAKJlV_IW6cYl63zpKNuI4EMkxR9b";
     private final static String vitePuserAppKey = "eb1d5f283081a78b932c";
     private final static String vitePusherAppCluster = "us2";
@@ -27,6 +30,18 @@ public class KickWebsocket implements Closeable {
             .setCluster(vitePusherAppCluster)
             .setChannelAuthorizer(client)
         );
+        pusher.connect();
+    }
+
+    public CompletableFuture<Void> connect(Channel channel){
+        return CompletableFuture.supplyAsync(()-> {
+            if(pusher.getConnection().getState() == DISCONNECTED)
+                pusher.connect();
+            val channelName = new StringBuilder("chatroom.").append(channel.chatroom().id()).toString();
+            if(!pusher.getPresenceChannel(channelName).isSubscribed())
+                subscribedChannels.add(pusher.subscribe(channelName));
+            return null;
+            }, client.getExecutor());
     }
     @Override
     public void close() {

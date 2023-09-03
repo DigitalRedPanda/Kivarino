@@ -2,7 +2,7 @@ package com.digiunion.kick;
 
 import com.digiunion.kick.model.Channel;
 import com.digiunion.kick.model.Livestream;
-import com.digiunion.kick.websocket.PusherAuthTokenResponse;
+import com.digiunion.kick.websocket.model.PusherAuthTokenResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pusher.client.ChannelAuthorizer;
@@ -35,6 +35,7 @@ public class KickClient implements ChannelAuthorizer {
     @Getter
     private final ExecutorService executor;
     private final static ThreadLocal <OkHttpClient> client = new ThreadLocal<>();
+    @Getter
     private final static OkHttpClient rClient = new OkHttpClient.Builder().build();
 
     public KickClient(){
@@ -158,7 +159,7 @@ public class KickClient implements ChannelAuthorizer {
         try {
             return requestToken(channelName, socketId).get();
         } catch (InterruptedException | ExecutionException e) {
-            log.severe("could not execute requestToken; %s".formatted( e.getMessage()));
+            log.severe("could not execute requestToken; " + e.getMessage());
             return null;
         }
     }
@@ -172,14 +173,14 @@ public class KickClient implements ChannelAuthorizer {
                 .post(RequestBody.create(builder.toString(), MediaType.parse("application/json"))).build()).execute()){
                 assert response.body() != null;
                 return response.body().string();
-        } catch (IOException e) {
-                log.severe("could not send token request; %s".formatted( e.getMessage()));
+            } catch (IOException e) {
+                log.severe("could not send token request; " + e.getMessage());
                 return "";
             }}, executor).thenApply(json -> {
             try {
                 return mapper.readValue(json, PusherAuthTokenResponse.class).auth();
             } catch (JsonProcessingException e) {
-                log.severe("could not process json token; %s".formatted( e.getMessage()));
+                log.severe("could not process json token; " + e.getMessage());
                 return "";
             }
         });
