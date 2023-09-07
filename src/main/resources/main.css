@@ -2,22 +2,32 @@
 font-family: 'Roobert-Regular';
 src: url('fonts/Roobert-Regular.ttf);
 }*/
+.text {
+  -fx-text-fill: white;
+  -fx-font-size: 15px;
+  -fx-font-weight: 200;
+}
+.label {
+   -fx-text-fill: white;
+   -fx-font-size: 15px;
+   -fx-font-weight: 200;
+}
 .button {
--fx-text-fill: white;
--fx-font-size: 15px;
--fx-background-radius: 0px;
--fx-font-weight: 200;
+  -fx-font-weight: 200;
+  -fx-background-color: #404446;
+  -fx-background-radius: 0px;
+  -fx-text-fill: white;
+  -fx-font-size: 15px;
+  -fx-font-weight: 200;
 /*-fx-font-family: 'Roobert-Regular';*/
 }
-#tab {
--fx-background-color: #404446;
--fx-skin: 'com.digiunion.gui.skin.TabSkin';
-}
 #add-button{
--fx-background-color: #36393e;
+  -fx-background-color: #36393e;
 }
 #remove-button {
-
+}
+#remove-button:active {
+  -fx-background-color: #0B6623;
 }
 /*.button:hover{
 -fx-background-color: #54626F;

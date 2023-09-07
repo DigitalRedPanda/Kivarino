@@ -18,7 +18,7 @@ public class KickWebsocket implements Closeable {
 
     private final KickClient client = new KickClient();
     private final Pusher pusher;
-    private final ArrayList<com.pusher.client.channel.Channel> subscribedChannels = new ArrayList<>();
+    private final ArrayList<Channel> subscribedChannels = new ArrayList<>();
     private final static String viteRecapchaSiteKey = "6LfW60MjAAAAAKJlV_IW6cYl63zpKNuI4EMkxR9b";
     private final static String vitePuserAppKey = "eb1d5f283081a78b932c";
     private final static String vitePusherAppCluster = "us2";
@@ -38,8 +38,10 @@ public class KickWebsocket implements Closeable {
             if(pusher.getConnection().getState() == DISCONNECTED)
                 pusher.connect();
             val channelName = new StringBuilder("chatroom.").append(channel.chatroom().id()).toString();
-            if(!pusher.getPresenceChannel(channelName).isSubscribed())
-                subscribedChannels.add(pusher.subscribe(channelName));
+            if(!pusher.getPresenceChannel(channelName).isSubscribed()) {
+                pusher.subscribe(channelName);
+                subscribedChannels.add(channel);
+            }
             return null;
             }, client.getExecutor());
     }

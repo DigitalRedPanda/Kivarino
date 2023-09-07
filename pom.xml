@@ -65,11 +65,6 @@
       <version>2.1.214</version>
     </dependency>
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-jdk14</artifactId>
-      <version>2.0.5</version>
-    </dependency>
-    <dependency>
       <groupId>jakarta.websocket</groupId>
       <artifactId>jakarta.websocket-client-api</artifactId>
       <version>2.1.0</version>
@@ -122,6 +117,8 @@
             <version>3.1.0</version>
             <configuration>
               <mainClass>${main.class}</mainClass>
+              <!-- default gc strategy -->
+<!--              <arguments>-XX:+UseG1GC</arguments>-->
             </configuration>
           </plugin>
           <plugin>

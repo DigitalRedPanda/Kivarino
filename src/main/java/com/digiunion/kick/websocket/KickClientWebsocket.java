@@ -18,10 +18,11 @@ import java.util.ArrayList;
 @Log
 @RequiredArgsConstructor
 public class KickClientWebsocket {
+    @Getter
     private Session session;
     @NonNull
     @Getter
-    private final ArrayList<Channel> channels = new ArrayList<>();
+    private final ArrayList<Channel> channels;
 
     private final KickClient client = new KickClient();
     @OnOpen

@@ -20,8 +20,7 @@ public class Database implements Closeable {
     @Getter
     private static final Connection connection;
 
-    @Getter
-    private static final Database instance = new Database();
+    public static final Database instance = new Database();
 
     static {
         Connection temp;
@@ -44,7 +43,7 @@ public class Database implements Closeable {
         connection = temp;
     }
 
-    public ArrayList<Channel> getAllChannels(){
+    public ArrayList<Channel> getAllChannels() throws SQLException {
         try(val statement = connection.createStatement()){
             val temp = new ArrayList<Channel>();
             val result = statement.executeQuery("SELECT * FROM channels;");
@@ -56,9 +55,6 @@ public class Database implements Closeable {
                 );
             }
             return temp;
-        } catch (SQLException e) {
-            log.severe("could not query channels; " + e.getMessage());
-            return null;
         }
     }
 
@@ -76,18 +72,14 @@ public class Database implements Closeable {
         return optional;
     }
 
-    public boolean insertChannel(Channel channel) {
+    public void insertChannel(Channel channel) throws SQLException {
         try(val statement = connection.createStatement()) {
             val result = getStringBuilder(channel, channel.user()).append(";");
             statement.execute(result.toString());
-            return true;
-        } catch (SQLException e) {
-            log.severe("could not insert %s; %s".formatted(channel.slug(), e.getMessage()));
-            return false;
         }
     }
 
-    private static StringBuilder getStringBuilder(Channel channel, User user) {
+    private StringBuilder getStringBuilder(Channel channel, User user) {
         StringBuilder result = new StringBuilder();
         result.append("INSERT INTO channels VALUES(")
             .append(channel.id())
@@ -105,55 +97,15 @@ public class Database implements Closeable {
         return result;
     }
 
-    public boolean insertAllChannels(List<Channel> list) {
+    public void insertAllChannels(List<Channel> list) throws SQLException {
         val first = list.get(0);
         val builder = getStringBuilder(first, first.user());
         for (var i = 1; i < list.size(); i++)
             insertChannelSafe(list.get(i), builder);
         try(val statement = connection.createStatement()){
             statement.execute(builder.toString());
-            return true;
-        } catch (SQLException e) {
-            log.severe("could not insert channels; " + e.getMessage());
-            return false;
         }
     }
-//
-//    @NotNull
-//    private static StringBuilder getStringBuilder(Channel first) {
-//        val builder = new StringBuilder();
-//        val user = first.user();
-//        val livestream = first.livestream();
-//        if(livestream == null)
-//             builder.append("INSERT INTO channels(id, slug, user_id, username, chatroom_id) VALUES(")
-//                 .append(first.id())
-//                 .append(", '")
-//                 .append(first.slug())
-//                 .append("', ")
-//                 .append(user.id())
-//                 .append(", '")
-//                 .append(user.name())
-//                 .append("', ")
-//                 .append(first.chatroom().id())
-//                 .append(")");
-//        else
-//            builder.append("INSERT INTO channels VALUES (")
-//                .append(first.id())
-//                .append(", '")
-//                .append(first.slug())
-//                .append("', '")
-//                .append(livestream.thumbnail().url())
-//                .append("', ").append(livestream.viewerCount())
-//                .append(", ")
-//                .append(user.id())
-//                .append(", '")
-//                .append(user.name())
-//                .append("', ")
-//                .append(first.chatroom().id())
-//                .append(")");
-//        return builder;
-//    }
-
     private void insertChannelSafe(Channel channel, StringBuilder builder){
         val user = channel.user();
         builder.append(",(")
@@ -169,22 +121,21 @@ public class Database implements Closeable {
             .append(")");
     }
 
-    public boolean deleteAllChannels(){
+    public void deleteChannel(String slug) throws SQLException {
         try(val statement = connection.createStatement()){
-            statement.execute("DELETE FROM channels;");
-            return true;
-        } catch (SQLException e) {
-            log.severe("couldn't delete all channels; " + e.getMessage());
-            return false;
+            val builder = new StringBuilder("DELETE FROM channels WHERE slug = '").append(slug).append("';");
+            statement.execute(builder.toString());
         }
     }
-    public boolean dropChannels(){
+
+    public void deleteAllChannels() throws SQLException {
+        try(val statement = connection.createStatement()){
+            statement.execute("DELETE FROM channels;");
+        }
+    }
+    public void dropChannels() throws SQLException {
         try(val statement = connection.createStatement()){
             statement.execute("DROP TABLE channels;");
-            return true;
-        } catch (SQLException e) {
-            log.severe("couldn't drop channels table; " + e.getMessage());
-            return false;
         }
     }
 

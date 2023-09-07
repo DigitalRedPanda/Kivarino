@@ -2,6 +2,7 @@ package com.digiunion.gui.skin;
 
 import com.digiunion.database.Database;
 import com.digiunion.gui.GUI;
+import com.digiunion.gui.component.Tab;
 import com.digiunion.kick.KickClient;
 import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
@@ -27,16 +28,14 @@ import javafx.util.Duration;
 import lombok.extern.java.Log;
 import lombok.val;
 
+import java.sql.SQLException;
 import java.util.Optional;
 
 @Log
 public class AddButtonSkin extends ButtonSkin {
 
-    private final FlowPane pane;
-
-    private final Database database = GUI.getDatabase();
-
-    private final KickClient client = GUI.getClient();
+    private final Database database = GUI.database;
+    private final KickClient client = GUI.client;
 
     /**
      * Creates a new ButtonSkin instance, installing the necessary child
@@ -44,28 +43,21 @@ public class AddButtonSkin extends ButtonSkin {
      * well as the necessary input mappings for handling key, mouse, etc events.
      *
      * @param control The control that this skin should be installed onto.
+     * @param pane pane to add {@link Button tabs} into.
      */
     public AddButtonSkin(Button control, FlowPane pane) {
         super(control);
+        control.setFocusTraversable(false);
         val colorAdjust = new ColorAdjust();
         colorAdjust.setBrightness(0);
         control.setEffect(colorAdjust);
-        control.setOnMouseEntered(e -> {
-            val fadeInTimeline = new Timeline(
-                new KeyFrame(Duration.ZERO,
-                    new KeyValue(colorAdjust.brightnessProperty(), colorAdjust.brightnessProperty().getValue(), Interpolator.EASE_BOTH)),
-                new KeyFrame(Duration.millis(100),
-                    new KeyValue(colorAdjust.brightnessProperty(), 0.25, Interpolator.EASE_BOTH)
-                ));
-            fadeInTimeline.play();
-        });
-        control.setOnMouseExited(e -> {
-            val fadeOutTimeline = new Timeline(
-                new KeyFrame(Duration.ZERO,
-                    new KeyValue(colorAdjust.brightnessProperty(), colorAdjust.brightnessProperty().getValue(), Interpolator.EASE_BOTH)),
-                new KeyFrame(Duration.millis(100), new KeyValue(colorAdjust.brightnessProperty(), 0, Interpolator.EASE_BOTH)
-                ));
-            fadeOutTimeline.play();
+        control.hoverProperty().addListener(hoverEvent -> {
+            if(control.isHover())
+                new Timeline(new KeyFrame(Duration.ZERO, new KeyValue(colorAdjust.brightnessProperty(), colorAdjust.brightnessProperty().getValue(), Interpolator.EASE_BOTH)),
+                        new KeyFrame(Duration.millis(100), new KeyValue(colorAdjust.brightnessProperty(), 0.25, Interpolator.EASE_BOTH))).play();
+            else
+                new Timeline(new KeyFrame(Duration.ZERO, new KeyValue(colorAdjust.brightnessProperty(), colorAdjust.brightnessProperty().getValue(), Interpolator.EASE_BOTH)),
+                        new KeyFrame(Duration.millis(100), new KeyValue(colorAdjust.brightnessProperty(), 0, Interpolator.EASE_BOTH))).play();
         });
         control.setOnAction(event -> {
             val newChannel = new Stage();
@@ -79,18 +71,25 @@ public class AddButtonSkin extends ButtonSkin {
                             if(channelValue.slug().equals("damnbaldguy")){
                                 error("this mf doesn't like beethoven").show();
                             }
-                            else if (database.insertChannel(option.get()) && !channelValue.slug().equals("damnbaldguy")) {
-                                val tab = new Button(channelValue.slug());
-                                tab.setId("tab");
-                                tab.setSkin(new TabSkin(tab));
-                                if(channelValue.livestream() != null) {
-                                    val circle = ((TabSkin)tab.getSkin()).getLiveCircle();circle.setRadius(2);
-                                    circle.setVisible(true);
+                            else {
+                                try {
+                                    database.insertChannel(channelValue);
+                                    val tab = new Tab(channelValue.slug());
+                                    tab.setId("tab");
+                                    if(channelValue.livestream() != null) {
+                                        val circle = tab.liveCircle;
+                                        circle.setRadius(2);
+                                        circle.setVisible(true);
+                                    }
+                                    pane.getChildren().set(pane.getChildren().size() - 1, tab);
+                                    tab.requestFocus();
+                                    pane.getChildren().add(control);
+                                    GUI.tabs.add(tab);
+                                    GUI.channels.add(channelValue.slug());
+                                } catch (SQLException e) {
+                                    error("could not add %s, either they were already added or they don't exist (delulu)".formatted(channelName.getText())).show();
+                                    log.severe("could not insert %s; %s".formatted(channelName.getText() ,e.getMessage()));
                                 }
-                                pane.getChildren().set(pane.getChildren().size() - 1, tab);
-                                pane.getChildren().add(control);
-                                GUI.getButtons().add(tab);
-                                GUI.getChannels().add(channelValue);
                             }
                         } else {
                             error("could not add %s, either they were already added or they don't exist (delulu)".formatted(channelName.getText())).show();
@@ -106,7 +105,7 @@ public class AddButtonSkin extends ButtonSkin {
             newChannel.setHeight(200);
             newChannel.setWidth(600);
             newChannel.setTitle("channel");
-            newChannel.getIcons().add(GUI.getIcon());
+            newChannel.getIcons().add(GUI.icon);
             val pain = new HBox(5);
             pain.setStyle("-fx-background-color: #36393e;");
             val label = new Label("name:");
@@ -122,11 +121,15 @@ public class AddButtonSkin extends ButtonSkin {
             newChannel.show();
 
         });
-        this.pane = pane;
-//        control.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CornerRadii.EMPTY, Insets.EMPTY)));
     }
+
+    /**
+     *
+     * @param message error message tha appears on the {@link Stage stage}
+     * @return Stage - the stage that contains default configs
+     */
     private Stage error(String message){
-        Text errorLabel = new Text(message);
+        val errorLabel = new Text(message);
         errorLabel.setFill(Color.RED);
         val panepain = new StackPane();
         panepain.setStyle("-fx-background-color: #36393e;");

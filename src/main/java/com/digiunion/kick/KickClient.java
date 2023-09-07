@@ -138,13 +138,10 @@ public class KickClient implements ChannelAuthorizer {
      * @param slug streamer username with minimized set of symbols and lowercase letters; e.g. username: United_States_Of_Qassim, slug: united-states-of-qassim
      * @return Livestream record instance
      */
-    public Livestream getLivestreamSync(String slug){
+    public Livestream getLivestreamSync(String slug) throws IOException {
         try(val response = rClient.newCall(new Request.Builder().url(CHANNELS.url.concat(slug)).get().build()).execute()){
             assert response.body() != null;
             return mapper.readValue(response.body().string(), Channel.class).livestream();
-        } catch (IOException e) {
-            log.severe("could not send fetch %s's; %s".formatted(slug, e.getMessage()));
-            return null;
         }
     }
 
