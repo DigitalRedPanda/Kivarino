@@ -161,20 +161,22 @@ public class KickClient implements ChannelAuthorizer {
         }
     }
 
-    public CompletableFuture<String> requestToken(String channelName, String socketId){
+    public CompletableFuture<String> requestToken(String chatroomId, String socketId){
         return CompletableFuture.supplyAsync(() -> {
             client.set(rClient);
-            val builder = new StringBuilder().append("{\"socket_id\": \"").append(socketId).append("\",\"channel_name\": \"").append(channelName).append("\"}");
+            StringBuilder builder;
+            System.out.println(builder = new StringBuilder().append("{\n\"socket_id\": \"").append(socketId).append("\",\n\"channel_name\": \"").append(chatroomId).append("\"\n}"));
             try(val response = client.get().newCall(new Request.Builder()
                 .url(new URL(BASE_URL.url.concat("broadcasting/auth")))
                 .post(RequestBody.create(builder.toString(), MediaType.parse("application/json"))).build()).execute()){
-                assert response.body() != null;
+                assert response.body() != null && response.code() == 200;
                 return response.body().string();
             } catch (IOException e) {
-                log.severe("could not send token request; " + e.getMessage());
+                log.severe("could not send token request; " + e);
                 return "";
             }}, executor).thenApply(json -> {
             try {
+                System.out.println(json);
                 return mapper.readValue(json, PusherAuthTokenResponse.class).auth();
             } catch (JsonProcessingException e) {
                 log.severe("could not process json token; " + e.getMessage());

@@ -60,8 +60,9 @@ public class GUI extends Application {
         addButton.setSkin(new AddButtonSkin(addButton, flow));
         if(!channels.isEmpty()) {
             for (val channel : channels) {
-                val button = new Tab(channel);
-                flow.getChildren().add(button);
+                val tab = new Tab(channel);
+                tabs.add(tab);
+                flow.getChildren().add(tab);
             }
             tabs.get(0).requestFocus();
         }
@@ -76,7 +77,6 @@ public class GUI extends Application {
         primaryStage.setMinHeight(800);
         primaryStage.getIcons().add(icon);
         primaryStage.setTitle("Kivarino");
-//        primaryStage.initModality(Modality.WINDOW_MODAL);
         primaryStage.show();
         primaryStage.setOnCloseRequest(closeEvent -> {
             primaryStage.close();
@@ -84,21 +84,22 @@ public class GUI extends Application {
         });
         client.getExecutor().execute(() -> {
             while (true) try {
-                Livestream livestream;
-                Circle circle;
-                for (var i = 0; i < tabs.size(); i++) {
-                    livestream = client.getLivestreamSync(channels.get(i));
-                    circle = tabs.get(i).liveCircle;
-                    if (livestream != null && !circle.isVisible()) {
-                        circle.setRadius(2);
-                        circle.setVisible(true);
-                    } else if (livestream == null && circle.isVisible()) {
-                        circle.setVisible(false);
-                        circle.setRadius(0);
+                    Livestream livestream;
+                    Circle circle;
+                    for (var i = 0; i < tabs.size(); i++) {
+                        livestream = client.getLivestreamSync(channels.get(i));
+                        circle = tabs.get(i).liveCircle;
+                        System.out.println(channels.get(i));
+                        if (livestream != null && !circle.isVisible()) {
+                            circle.setRadius(2);
+                            circle.setVisible(true);
+                        } else if (livestream == null && circle.isVisible()) {
+                            circle.setVisible(false);
+                            circle.setRadius(0);
+                        }
                     }
-                }
-                log.info("looking for live channels");
-                TimeUnit.SECONDS.sleep(15);
+                    log.info("looking for live channels");
+                    TimeUnit.SECONDS.sleep(15);
             } catch (InterruptedException | IOException e) {
                 log.severe("could not sleep live eventListener; " + e.getMessage());
             }

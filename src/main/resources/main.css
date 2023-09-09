@@ -2,11 +2,11 @@
 font-family: 'Roobert-Regular';
 src: url('fonts/Roobert-Regular.ttf);
 }*/
-.text {
+/*.text {
   -fx-text-fill: white;
   -fx-font-size: 15px;
   -fx-font-weight: 200;
-}
+}*/
 .label {
    -fx-text-fill: white;
    -fx-font-size: 15px;
@@ -21,13 +21,12 @@ src: url('fonts/Roobert-Regular.ttf);
   -fx-font-weight: 200;
 /*-fx-font-family: 'Roobert-Regular';*/
 }
+#tab {
+  -fx-font-weight: 200;
+  -fx-background-color: #404446;
+}
 #add-button{
   -fx-background-color: #36393e;
-}
-#remove-button {
-}
-#remove-button:active {
-  -fx-background-color: #0B6623;
 }
 /*.button:hover{
 -fx-background-color: #54626F;

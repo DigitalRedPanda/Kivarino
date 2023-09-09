@@ -68,7 +68,7 @@ public class AddButtonSkin extends ButtonSkin {
                         val option = client.getChannel(channelName.getText()).thenApply(Optional::ofNullable).join();
                         if(option.isPresent()){
                             val channelValue = option.get();
-                            if(channelValue.slug().equals("damnbaldguy")){
+                            if(channelValue.slug().equals("damnbaldguy")) {
                                 error("this mf doesn't like beethoven").show();
                             }
                             else {

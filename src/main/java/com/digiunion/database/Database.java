@@ -1,8 +1,9 @@
 package com.digiunion.database;
 
 
-import com.digiunion.kick.model.*;
-import lombok.Getter;
+import com.digiunion.kick.model.Channel;
+import com.digiunion.kick.model.Chatroom;
+import com.digiunion.kick.model.User;
 import lombok.extern.java.Log;
 import lombok.val;
 
@@ -17,7 +18,6 @@ import java.util.Optional;
 @Log
 public class Database implements Closeable {
 
-    @Getter
     private static final Connection connection;
 
     public static final Database instance = new Database();
