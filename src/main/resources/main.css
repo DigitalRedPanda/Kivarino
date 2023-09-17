@@ -2,11 +2,11 @@
 font-family: 'Roobert-Regular';
 src: url('fonts/Roobert-Regular.ttf);
 }*/
-/*.text {
-  -fx-text-fill: white;
-  -fx-font-size: 15px;
+.text {
+  -fx-fill: #D1CBC1;
+  -fx-font-size: 0px;
   -fx-font-weight: 200;
-}*/
+}
 .label {
    -fx-text-fill: white;
    -fx-font-size: 15px;

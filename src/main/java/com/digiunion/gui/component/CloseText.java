@@ -3,6 +3,7 @@ package com.digiunion.gui.component;
 import com.digiunion.gui.GUI;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import lombok.extern.java.Log;
 import lombok.val;
@@ -14,21 +15,22 @@ public class CloseText extends Text {
     public CloseText(Tab tab, String text){
         super(text);
         setStyle("""
-              -fx-fill: white;
-              -fx-font-size: 15px;
+              -fx-fill: #D1CBC1;
               -fx-font-weight: 200;
              """);
+        setFont(Font.font(0));
 //        styleProperty().bind(parent.styleProperty());
         setFocusTraversable(false);
-        setVisible(false);
         val colorAdjust = new ColorAdjust();
         colorAdjust.setBrightness(0);
         setEffect(colorAdjust);
         hoverProperty().addListener(hoverEvent -> {
-            if(isHover() && (tab.isHover() || tab.isFocused()))
+//            System.out.println(isHover());
+            if(isHover()) {
                 setFill(Color.WHITE);
+            }
             else
-                setFill(Color.LIGHTGREY);
+                setFill(Color.web("#D1CBC1"));
         });
         setOnMouseClicked(clickEvent -> {
             val channelSlug = tab.text.getText();

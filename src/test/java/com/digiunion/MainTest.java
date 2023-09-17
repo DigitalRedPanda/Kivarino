@@ -1,18 +1,16 @@
 package com.digiunion;
 
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.platform.commons.annotation.Testable;
 
 /**
  * Unit test for simple Lmao.
  */
-class MainTest {
+@Testable
+public class MainTest {
     /**
      * Rigorous Test.
      */
-    @Test
-    void testApp() {
-        assertEquals(1, 1);
+    public void lmao(){
+
     }
 }

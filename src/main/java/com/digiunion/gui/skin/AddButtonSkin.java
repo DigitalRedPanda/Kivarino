@@ -66,7 +66,7 @@ public class AddButtonSkin extends ButtonSkin {
 //                try {
                     Platform.runLater(() -> {
                         val option = client.getChannel(channelName.getText()).thenApply(Optional::ofNullable).join();
-                        if(option.isPresent()){
+                        if(option.isPresent()) {
                             val channelValue = option.get();
                             if(channelValue.slug().equals("damnbaldguy")) {
                                 error("this mf doesn't like beethoven").show();
@@ -81,10 +81,11 @@ public class AddButtonSkin extends ButtonSkin {
                                         circle.setRadius(2);
                                         circle.setVisible(true);
                                     }
-                                    pane.getChildren().set(pane.getChildren().size() - 1, tab);
-                                    tab.requestFocus();
-                                    pane.getChildren().add(control);
+                                    val children = pane.getChildren();
+                                    children.set(children.size() - 1, tab);
+                                    children.add(control);
                                     GUI.tabs.add(tab);
+                                    tab.requestFocus();
                                     GUI.channels.add(channelValue.slug());
                                 } catch (SQLException e) {
                                     error("could not add %s, either they were already added or they don't exist (delulu)".formatted(channelName.getText())).show();
@@ -128,14 +129,14 @@ public class AddButtonSkin extends ButtonSkin {
      * @param message error message tha appears on the {@link Stage stage}
      * @return Stage - the stage that contains default configs
      */
-    private Stage error(String message){
+    private Stage error(String message) {
         val errorLabel = new Text(message);
         errorLabel.setFill(Color.RED);
-        val panepain = new StackPane();
-        panepain.setStyle("-fx-background-color: #36393e;");
-        panepain.setAlignment(Pos.CENTER);
-        panepain.getChildren().add(errorLabel);
-        val scene = new Scene(panepain,500, 100);
+        val painAndAgony = new StackPane();
+        painAndAgony.setStyle("-fx-background-color: #36393e;");
+        painAndAgony.setAlignment(Pos.CENTER);
+        painAndAgony.getChildren().add(errorLabel);
+        val scene = new Scene(painAndAgony,500, 100);
         val error = new Stage(StageStyle.UTILITY);
         error.setTitle("Error");
         error.setScene(scene);

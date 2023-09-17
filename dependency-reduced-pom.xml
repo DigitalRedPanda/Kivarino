@@ -13,19 +13,6 @@
     </resources>
     <plugins>
       <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.1</version>
-      </plugin>
-      <plugin>
-        <groupId>com.gluonhq</groupId>
-        <artifactId>gluonfx-maven-plugin</artifactId>
-        <version>${gluonfx.plugin.version}</version>
-        <configuration>
-          <target>${gluonfx.target}</target>
-          <mainClass>${main.class}</mainClass>
-        </configuration>
-      </plugin>
-      <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
         <version>3.1.0</version>
@@ -56,6 +43,24 @@
         <groupId>org.projectlombok</groupId>
         <artifactId>lombok-maven-plugin</artifactId>
         <version>1.18.20.0</version>
+      </plugin>
+      <plugin>
+        <groupId>com.gluonhq</groupId>
+        <artifactId>gluonfx-maven-plugin</artifactId>
+        <version>${gluonfx.plugin.version}</version>
+        <configuration>
+          <target>${gluonfx.target}</target>
+          <mainClass>${main.class}</mainClass>
+          <attachList>
+            <list>display</list>
+            <list>lifecycle</list>
+            <list>statusbar</list>
+            <list>storage</list>
+          </attachList>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
       </plugin>
     </plugins>
   </build>
