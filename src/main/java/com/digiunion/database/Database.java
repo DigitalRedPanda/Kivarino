@@ -1,23 +1,22 @@
 package com.digiunion.database;
 
 
-import com.digiunion.kick.model.*;
-import lombok.Getter;
-import lombok.extern.java.Log;
-import lombok.val;
+import com.digiunion.kick.model.Channel;
+import com.digiunion.kick.model.Chatroom;
+import com.digiunion.kick.model.User;
 
 import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-@Log
 public class Database implements Closeable {
 
-    @Getter
     private static final Connection connection;
 
     public static final Database instance = new Database();
@@ -36,7 +35,7 @@ public class Database implements Closeable {
                 );
                 """);
         } catch (SQLException e) {
-            log.severe("could not load database; " + e.getMessage());
+            System.err.printf("[\033[31mSEVERE\033[0m]could not load database; %s", e.getMessage());
             System.exit(1);
             temp = null;
         }
@@ -44,9 +43,9 @@ public class Database implements Closeable {
     }
 
     public ArrayList<Channel> getAllChannels() throws SQLException {
-        try(val statement = connection.createStatement()){
-            val temp = new ArrayList<Channel>();
-            val result = statement.executeQuery("SELECT * FROM channels;");
+        try(final Statement statement = connection.createStatement()){
+            ArrayList<Channel> temp = new ArrayList<>();
+            ResultSet result = statement.executeQuery("SELECT * FROM channels;");
             while(result.next()) {
                 temp.add(new Channel(result.getInt(1), result.getString(2),
                     null
@@ -60,21 +59,21 @@ public class Database implements Closeable {
 
     public Optional<Channel> getChannel(String slug){
         Optional<Channel> optional;
-        try(val statement = connection.createStatement()) {
-            val result = statement.executeQuery("SELECT * FROM channels WHERE slug = '" + slug + "';");
+        try(final Statement statement = connection.createStatement()) {
+            ResultSet result = statement.executeQuery("SELECT * FROM channels WHERE slug = '" + slug + "';");
             result.next();
             optional = Optional.of(new Channel(result.getInt(1), result.getString(2), null, new User(result.getInt(3), result.getString(4)), new Chatroom(result.getInt(5))));
 
         } catch (SQLException e) {
-            log.info("could not get %s; %s".formatted(slug, e.getMessage()));
+            System.err.printf("could not get %s; %s", slug, e.getMessage());
             optional = Optional.empty();
         }
         return optional;
     }
 
     public void insertChannel(Channel channel) throws SQLException {
-        try(val statement = connection.createStatement()) {
-            val result = getStringBuilder(channel, channel.user()).append(";");
+        try(final Statement statement = connection.createStatement()) {
+            final StringBuilder result = getStringBuilder(channel, channel.user()).append(";");
             statement.execute(result.toString());
         }
     }
@@ -98,16 +97,16 @@ public class Database implements Closeable {
     }
 
     public void insertAllChannels(List<Channel> list) throws SQLException {
-        val first = list.get(0);
-        val builder = getStringBuilder(first, first.user());
+        final Channel first = list.get(0);
+        final StringBuilder builder = getStringBuilder(first, first.user());
         for (var i = 1; i < list.size(); i++)
             insertChannelSafe(list.get(i), builder);
-        try(val statement = connection.createStatement()){
+        try(final Statement statement = connection.createStatement()){
             statement.execute(builder.toString());
         }
     }
     private void insertChannelSafe(Channel channel, StringBuilder builder){
-        val user = channel.user();
+        final User user = channel.user();
         builder.append(",(")
             .append(channel.id())
             .append(", '")
@@ -122,19 +121,19 @@ public class Database implements Closeable {
     }
 
     public void deleteChannel(String slug) throws SQLException {
-        try(val statement = connection.createStatement()){
-            val builder = new StringBuilder("DELETE FROM channels WHERE slug = '").append(slug).append("';");
+        try(final Statement statement = connection.createStatement()){
+            final StringBuilder builder = new StringBuilder("DELETE FROM channels WHERE slug = '").append(slug).append("';");
             statement.execute(builder.toString());
         }
     }
 
     public void deleteAllChannels() throws SQLException {
-        try(val statement = connection.createStatement()){
+        try(final Statement statement = connection.createStatement()){
             statement.execute("DELETE FROM channels;");
         }
     }
     public void dropChannels() throws SQLException {
-        try(val statement = connection.createStatement()){
+        try(final Statement statement = connection.createStatement()){
             statement.execute("DROP TABLE channels;");
         }
     }
@@ -144,10 +143,10 @@ public class Database implements Closeable {
         Optional<String> catalog = Optional.empty();
         try {
             catalog = Optional.ofNullable(connection.getCatalog());
-            catalog.ifPresent(s -> log.info("closing connection of " + s));
+            catalog.ifPresent(s -> System.out.printf("[\033[34mINFO\033[0m] closing connection of %s\n", s));
             connection.close();
         } catch (SQLException e) {
-            log.severe("could not close connection of %s; %s".formatted(catalog.orElse("not found"), e.getMessage()));
+            System.err.printf("[\033[31mSEVERE\033[0m] could not close connection of %s; %s\n", catalog.orElse("not found"), e.getMessage());
         }
     }
 }

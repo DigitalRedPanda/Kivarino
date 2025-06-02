@@ -15,43 +15,42 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
-import lombok.extern.java.Log;
-import lombok.val;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-@Log
 public class GUI extends Application {
 
     public static Scene scene;
 
     public static final KickClient client = new KickClient();
     public static final Database database = Database.instance;
-    public static final Image icon = new Image("Kivarino.png");
+    public static Image icon;
     public static final FlowPane flow = new FlowPane();
-    public static final ArrayList<String> channels = new ArrayList<>();
+    public static final ArrayList<String> channels;
+    public static Stage primaryStage;
 
     static {
         ArrayList<Channel> channels1;
         try {
             channels1 = database.getAllChannels();
         } catch (SQLException e) {
-            log.severe("could not load channels; " + e.getMessage());
+            System.err.printf("[\033[31mSEVERE\033[0m]could not load channels; %s\n", e.getMessage());
             channels1 = new ArrayList<>();
         }
-        for (val channel : channels1)
-            channels.add(channel.slug());
+        channels = new ArrayList<>(channels1.stream().map(Channel::slug).toList());
     }
 
     public static final ArrayList<Tab> tabs = new ArrayList<>();
     @Override
     public void start(Stage primaryStage) {
-        val stackPane = new StackPane();
+        icon = new Image("Kivarino.png");
+        GUI.primaryStage = primaryStage;
+        final StackPane stackPane = new StackPane();
         stackPane.setStyle("-fx-background-color: #36393e;");
-        val addButton = new Button("+");
+        final Button addButton = new Button("+");
         addButton.setId("add-button");
         //this is supposed to be the default setting
 //        flow.setAlignment(Pos.TOP_LEFT);
@@ -59,9 +58,10 @@ public class GUI extends Application {
         flow.setVgap(1);
         addButton.setSkin(new AddButtonSkin(addButton, flow));
         if(!channels.isEmpty()) {
-            for (val channel : channels) {
-                val button = new Tab(channel);
-                flow.getChildren().add(button);
+            for (final String channel : channels) {
+                final Tab tab = new Tab(channel);
+                tabs.add(tab);
+                flow.getChildren().add(tab);
             }
             tabs.get(0).requestFocus();
         }
@@ -76,19 +76,21 @@ public class GUI extends Application {
         primaryStage.setMinHeight(800);
         primaryStage.getIcons().add(icon);
         primaryStage.setTitle("Kivarino");
-//        primaryStage.initModality(Modality.WINDOW_MODAL);
         primaryStage.show();
         primaryStage.setOnCloseRequest(closeEvent -> {
             primaryStage.close();
             System.exit(0);
         });
         client.getExecutor().execute(() -> {
-            while (true) try {
+            do try {
                 Livestream livestream;
                 Circle circle;
-                for (var i = 0; i < tabs.size(); i++) {
-                    livestream = client.getLivestreamSync(channels.get(i));
-                    circle = tabs.get(i).liveCircle;
+                final ArrayList<String> safetyMeasure = channels;
+                final ArrayList<Tab> safetyMeasure2 = tabs;
+                for (var i = 0; i < safetyMeasure2.size(); i++) {
+                    /*System.out.println(*/livestream = client.getLivestream(safetyMeasure.get(i)).get()/*)*/;
+                    circle = safetyMeasure2.get(i).liveCircle;
+                    System.out.println(safetyMeasure.get(i));
                     if (livestream != null && !circle.isVisible()) {
                         circle.setRadius(2);
                         circle.setVisible(true);
@@ -97,11 +99,15 @@ public class GUI extends Application {
                         circle.setRadius(0);
                     }
                 }
-                log.info("looking for live channels");
+                System.out.println("[\033[34mINFO\033[0m]looking for live channels");
                 TimeUnit.SECONDS.sleep(15);
-            } catch (InterruptedException | IOException e) {
-                log.severe("could not sleep live eventListener; " + e.getMessage());
+            } catch (InterruptedException | ExecutionException e) {
+                System.err.printf("[\033[31mSEVERE\033[0m] could not sleep live eventListener; %s\n", e.getMessage());
             }
+            while (true);
         });
+    }
+    public static void main(String[] args) {
+      GUI.launch(args);
     }
 }

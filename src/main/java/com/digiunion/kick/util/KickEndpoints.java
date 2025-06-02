@@ -1,10 +1,7 @@
 package com.digiunion.kick.util;
 
-import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
 public enum KickEndpoints {
-
     BASE_URL("https://kick.com/"),
     API_V1(BASE_URL.url.concat("api/v1/")),
     API_V2(BASE_URL.url.concat("api/v2/")),
@@ -12,4 +9,8 @@ public enum KickEndpoints {
     USERS(API_V1.url.concat("users"));
 
     public final String url;
+    private KickEndpoints(String url) {
+    this.url = url;
+      
+    } 
 }

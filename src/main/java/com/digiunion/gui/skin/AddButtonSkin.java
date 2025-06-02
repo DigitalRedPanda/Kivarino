@@ -4,13 +4,17 @@ import com.digiunion.database.Database;
 import com.digiunion.gui.GUI;
 import com.digiunion.gui.component.Tab;
 import com.digiunion.kick.KickClient;
+import com.digiunion.kick.model.Channel;
 import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
+import javafx.scene.shape.Circle;
 import javafx.scene.Scene;
+import javafx.scene.Node;
+import javafx.collections.ObservableList;
 import javafx.scene.control.Button;
 import javafx.scene.control.Control;
 import javafx.scene.control.Label;
@@ -25,13 +29,10 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
-import lombok.extern.java.Log;
-import lombok.val;
 
 import java.sql.SQLException;
 import java.util.Optional;
 
-@Log
 public class AddButtonSkin extends ButtonSkin {
 
     private final Database database = GUI.database;
@@ -48,7 +49,7 @@ public class AddButtonSkin extends ButtonSkin {
     public AddButtonSkin(Button control, FlowPane pane) {
         super(control);
         control.setFocusTraversable(false);
-        val colorAdjust = new ColorAdjust();
+        final ColorAdjust colorAdjust = new ColorAdjust();
         colorAdjust.setBrightness(0);
         control.setEffect(colorAdjust);
         control.hoverProperty().addListener(hoverEvent -> {
@@ -60,35 +61,36 @@ public class AddButtonSkin extends ButtonSkin {
                         new KeyFrame(Duration.millis(100), new KeyValue(colorAdjust.brightnessProperty(), 0, Interpolator.EASE_BOTH))).play();
         });
         control.setOnAction(event -> {
-            val newChannel = new Stage();
-            val channelName = new TextField();
+            final Stage newChannel = new Stage();
+            final TextField channelName = new TextField();
             channelName.setOnAction(event1 -> {
 //                try {
                     Platform.runLater(() -> {
-                        val option = client.getChannel(channelName.getText()).thenApply(Optional::ofNullable).join();
-                        if(option.isPresent()){
-                            val channelValue = option.get();
-                            if(channelValue.slug().equals("damnbaldguy")){
+                        final Optional<Channel> option = client.getChannel(channelName.getText()).thenApply(Optional::ofNullable).join();
+                        if(option.isPresent()) {
+                            final Channel channelValue = option.get();
+                            if(channelValue.slug().equals("damnbaldguy")) {
                                 error("this mf doesn't like beethoven").show();
                             }
                             else {
                                 try {
                                     database.insertChannel(channelValue);
-                                    val tab = new Tab(channelValue.slug());
+                                    final Tab tab = new Tab(channelValue.slug());
                                     tab.setId("tab");
                                     if(channelValue.livestream() != null) {
-                                        val circle = tab.liveCircle;
+                                        final Circle circle  = tab.liveCircle;
                                         circle.setRadius(2);
                                         circle.setVisible(true);
                                     }
-                                    pane.getChildren().set(pane.getChildren().size() - 1, tab);
-                                    tab.requestFocus();
-                                    pane.getChildren().add(control);
+                                    final ObservableList<Node>  children = pane.getChildren();
+                                    children.set(children.size() - 1, tab);
+                                    children.add(control);
                                     GUI.tabs.add(tab);
+                                    tab.requestFocus();
                                     GUI.channels.add(channelValue.slug());
                                 } catch (SQLException e) {
                                     error("could not add %s, either they were already added or they don't exist (delulu)".formatted(channelName.getText())).show();
-                                    log.severe("could not insert %s; %s".formatted(channelName.getText() ,e.getMessage()));
+                                    System.err.printf("[\033[31mSEVERE\033[0m] could not insert %s; %s\n", channelName.getText() ,e.getMessage());
                                 }
                             }
                         } else {
@@ -106,9 +108,9 @@ public class AddButtonSkin extends ButtonSkin {
             newChannel.setWidth(600);
             newChannel.setTitle("channel");
             newChannel.getIcons().add(GUI.icon);
-            val pain = new HBox(5);
+            final HBox pain = new HBox(5);
             pain.setStyle("-fx-background-color: #36393e;");
-            val label = new Label("name:");
+            final Label label = new Label("name:");
             label.setTextFill(Color.WHITE);
             label.setStyle("""
                 -fx-font-weight: 200;
@@ -116,7 +118,7 @@ public class AddButtonSkin extends ButtonSkin {
                 """);
             pain.getChildren().addAll(label, channelName);
             pain.setAlignment(Pos.CENTER);
-            val channelScene = new Scene(pain, 200, 600);
+            final Scene channelScene = new Scene(pain, 200, 600);
             newChannel.setScene(channelScene);
             newChannel.show();
 
@@ -128,15 +130,15 @@ public class AddButtonSkin extends ButtonSkin {
      * @param message error message tha appears on the {@link Stage stage}
      * @return Stage - the stage that contains default configs
      */
-    private Stage error(String message){
-        val errorLabel = new Text(message);
+    private Stage error(String message) {
+        final Text errorLabel = new Text(message);
         errorLabel.setFill(Color.RED);
-        val panepain = new StackPane();
-        panepain.setStyle("-fx-background-color: #36393e;");
-        panepain.setAlignment(Pos.CENTER);
-        panepain.getChildren().add(errorLabel);
-        val scene = new Scene(panepain,500, 100);
-        val error = new Stage(StageStyle.UTILITY);
+        final StackPane painAndAgony = new StackPane();
+        painAndAgony.setStyle("-fx-background-color: #36393e;");
+        painAndAgony.setAlignment(Pos.CENTER);
+        painAndAgony.getChildren().add(errorLabel);
+        final Scene scene = new Scene(painAndAgony,500, 100);
+        final Stage error = new Stage(StageStyle.UTILITY);
         error.setTitle("Error");
         error.setScene(scene);
         return error;
