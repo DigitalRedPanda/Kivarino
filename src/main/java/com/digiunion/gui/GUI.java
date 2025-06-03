@@ -5,6 +5,7 @@ import com.digiunion.gui.component.Tab;
 import com.digiunion.gui.skin.AddButtonSkin;
 import com.digiunion.kick.KickClient;
 import com.digiunion.kick.model.Channel;
+import com.digiunion.kick.model.User;
 import com.digiunion.kick.model.Livestream;
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -40,7 +41,7 @@ public class GUI extends Application {
             System.err.printf("[\033[31mSEVERE\033[0m]could not load channels; %s\n", e.getMessage());
             channels1 = new ArrayList<>();
         }
-        channels = new ArrayList<>(channels1.stream().map(Channel::slug).toList());
+        channels = new ArrayList<>(channels1.stream().map(channel -> channel.user().name()).toList());
     }
 
     public static final ArrayList<Tab> tabs = new ArrayList<>();
@@ -54,7 +55,7 @@ public class GUI extends Application {
         addButton.setId("add-button");
         //this is supposed to be the default setting
 //        flow.setAlignment(Pos.TOP_LEFT);
-        flow.setHgap(1);
+        flow.setHgap(0);
         flow.setVgap(1);
         addButton.setSkin(new AddButtonSkin(addButton, flow));
         if(!channels.isEmpty()) {

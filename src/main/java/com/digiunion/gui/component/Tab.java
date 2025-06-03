@@ -20,10 +20,10 @@ import static javafx.animation.Interpolator.EASE_BOTH;
 
 public class Tab extends Region {
 
-    private static final double top = 6d;
+    private static final double top = 6;
     private static final double bottom = 6.25;
-    private static final Insets defaultInset = new Insets(top, 3, bottom, 16);
-    private static final Insets modifiedInset = new Insets(top, 0, bottom, 8);
+    private static final Insets unhoveredInset = new Insets(top, 3, bottom, 16);
+    private static final Insets hoveredInset = new Insets(top, 0, bottom, 8);
     public final Circle liveCircle = new Circle();
     public final HBox hBox = new HBox(5);
     public final Text text;
@@ -38,7 +38,7 @@ public class Tab extends Region {
         text.setFont(new Font(15));
 
 
-        hBox.setPadding(defaultInset);
+        hBox.setPadding(unhoveredInset);
         liveCircle.setRadius(0);
         liveCircle.setFill(Color.RED);
         liveCircle.setVisible(false);
@@ -56,7 +56,7 @@ public class Tab extends Region {
             if(Tab.focusedTab != this) {
                 if (isHover()) {
                     timeline1.play();
-                    hBox.setPadding(modifiedInset);
+                    hBox.setPadding(hoveredInset);
                     closeText.setVisible(true);
                     closeText.setFont(Font.font(15));
 
@@ -64,7 +64,7 @@ public class Tab extends Region {
                 else {
                     new Timeline(new KeyFrame(Duration.ZERO, new KeyValue(colorAdjust.brightnessProperty(), colorAdjust.brightnessProperty().getValue(), EASE_BOTH)),
                         new KeyFrame(Duration.millis(100), new KeyValue(colorAdjust.brightnessProperty(), 0, EASE_BOTH))).play();
-                    hBox.setPadding(defaultInset);
+                    hBox.setPadding(unhoveredInset);
                     closeText.setFont(Font.font(0));
                     closeText.setVisible(false);
                 }
@@ -81,13 +81,13 @@ public class Tab extends Region {
                 colorAdjust.setBrightness(0.25);
                 closeText.setVisible(true);
                 closeText.setFont(Font.font(15));
-                hBox.setPadding(modifiedInset);
+                hBox.setPadding(hoveredInset);
             } else {
                 setStyle("-fx-background-color: #404446;");
                 closeText.setVisible(false);
                 colorAdjust.setBrightness(0);
                 closeText.setFont(Font.font(0));
-                hBox.setPadding(defaultInset);
+                hBox.setPadding(unhoveredInset);
             }
         });
     }

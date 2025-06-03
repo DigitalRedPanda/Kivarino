@@ -75,7 +75,7 @@ public class AddButtonSkin extends ButtonSkin {
                             else {
                                 try {
                                     database.insertChannel(channelValue);
-                                    final Tab tab = new Tab(channelValue.slug());
+                                    final Tab tab = new Tab(channelValue.user().name());
                                     tab.setId("tab");
                                     if(channelValue.livestream() != null) {
                                         final Circle circle  = tab.liveCircle;
@@ -87,7 +87,7 @@ public class AddButtonSkin extends ButtonSkin {
                                     children.add(control);
                                     GUI.tabs.add(tab);
                                     tab.requestFocus();
-                                    GUI.channels.add(channelValue.slug());
+                                    GUI.channels.add(channelValue.user().name());
                                 } catch (SQLException e) {
                                     error("could not add %s, either they were already added or they don't exist (delulu)".formatted(channelName.getText())).show();
                                     System.err.printf("[\033[31mSEVERE\033[0m] could not insert %s; %s\n", channelName.getText() ,e.getMessage());

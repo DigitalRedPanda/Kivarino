@@ -78,7 +78,7 @@ public final class Main {
             }
         }).thenAccept(System.out::println);
         eventloop.run();
-        com.digiunion.gui.GUI.main(args);
+        //com.digiunion.gui.GUI.main(args);
 //        System.out.println("Headers:");
 //        channel2.join().getHeaders().forEach((lmao) -> System.out.printf("%s: %s,\n", lmao.getKey(), lmao.getValue()));
 //        System.out.println("Cookies:");
