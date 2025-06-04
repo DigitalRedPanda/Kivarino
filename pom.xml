@@ -9,6 +9,13 @@
   <version>0.0.1</version>
 
   <name>kivarino</name>
+<distributionManagement>
+   <repository>
+     <id>github</id>
+     <name>GitHub Javachaos Apache Maven Packages</name>
+     <url>https://maven.pkg.github.com/javachaos/jrdrand</url>
+   </repository>
+  </distributionManagement>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -18,14 +25,18 @@
     <javafx.version>21.0.4</javafx.version>
     <javafx.plugin.version>0.0.13</javafx.plugin.version>
     <gluonfx.plugin.version>1.0.23</gluonfx.plugin.version>
-    <!--<main.class>com.digiunion.Main</main.class>-->
+    <main.class>com.digiunion.Main</main.class>
     <javafx.main.class>com.digiunion.gui.GUI</javafx.main.class>
 
     <main.class>com.digiunion.Main</main.class>
 <!--    <gluonfx.target></gluonfx.target>-->
   </properties>
-
   <dependencies>
+    <dependency>
+      <groupId>org.seleniumhq.selenium</groupId>
+      <artifactId>selenium-java</artifactId>
+      <version>4.33.0</version>
+    </dependency>
     <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-controls</artifactId>
@@ -93,11 +104,11 @@
       <version>2.0.5</version>
     </dependency>
     <dependency>
-    <groupId>org.openjdk.jmh</groupId>
-    <artifactId>jmh-core</artifactId>
-    <version>1.36</version>
-  </dependency>
-    <dependency>
+      <groupId>org.openjdk.jmh</groupId>
+      <artifactId>jmh-core</artifactId>
+      <version>1.36</version>
+    </dependency>
+      <dependency>
       <groupId>org.openjdk.jmh</groupId>
       <artifactId>jmh-generator-annprocess</artifactId>
       <version>1.36</version>
@@ -185,28 +196,30 @@
       </plugin>
     </plugins>
   </build>
-  <profiles>
-    <profile>
-      <id>android</id>
-      <properties>
-        <gluonfx.target>android</gluonfx.target>
-      </properties>
-    </profile>
-    <profile>
-      <id>ios</id>
-      <properties>
-        <gluonfx.target>ios</gluonfx.target>
-      </properties>
-    </profile>
-  </profiles>
-  <repositories>
-    <repository>
-      <id>gluon-releases</id>
-      <url>https://nexus.gluonhq.com/nexus/content/repositories/releases/</url>
-    </repository>
-    <repository>
-      <id>gluon-lts</id>
-      <url>https://nexus.gluonhq.com/nexus/content/repositories/openjfx-lts/</url>
-    </repository>
-  </repositories>
+  <!--<profiles>-->
+  <!--  <profile>-->
+  <!--    <id>android</id>-->
+  <!--    <properties>-->
+  <!--      <gluonfx.target>android</gluonfx.target>-->
+  <!--    </properties>-->
+  <!--  </profile>-->
+  <!--  <profile>-->
+  <!--    <id>ios</id>-->
+  <!--    <properties>-->
+  <!--      <gluonfx.target>ios</gluonfx.target>-->
+  <!--    </properties>-->
+  <!--  </profile>-->
+  <!--</profiles>-->
+  <!--<repositories>-->
+  <!--  <repository>-->
+  <!--    <id>gluon-releases</id>-->
+  <!--    <url>https://nexus.gluonhq.com/nexus/content/repositories/releases/</url>-->
+  <!--  </repository>-->
+  <!--  <repository>-->
+  <!--    <id>gluon-lts</id>-->
+  <!--    <url>https://nexus.gluonhq.com/nexus/content/repositories/openjfx-lts/</url>-->
+  <!--  </repository>-->
+  <!--</repositories>-->
+
+    
 </project>

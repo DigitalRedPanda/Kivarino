@@ -5,24 +5,21 @@ import com.digiunion.kick.model.Livestream;
 import com.digiunion.kick.websocket.model.PusherAuthTokenResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pusher.client.ChannelAuthorizer;
 import io.activej.eventloop.Eventloop;
 import io.activej.http.AsyncHttpClient;
 import io.activej.http.HttpRequest;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
 import javax.net.ssl.SSLContext;
-import java.io.IOException;
-import java.net.URL;
+import java.util.Base64;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import static com.digiunion.kick.util.KickEndpoints.BASE_URL;
 import static com.digiunion.kick.util.KickEndpoints.CHANNELS;
@@ -32,7 +29,7 @@ import static io.activej.http.HttpHeaders.USER_AGENT;
 /**
  * A kick api wrapper client that wraps kick endpoints into callable methods with OkHttpClient.
  */
-public class KickClient implements ChannelAuthorizer {
+public class KickClient {
     private final ObjectMapper mapper;
     private final Eventloop eventloop;
     private final AsyncHttpClient aCleint;
@@ -41,11 +38,11 @@ public class KickClient implements ChannelAuthorizer {
     public ExecutorService getExecutor() {
       return executor;
     }
-    private final static ThreadLocal <OkHttpClient> client = new ThreadLocal<>();
-    private final static OkHttpClient rClient = new OkHttpClient.Builder().build();
-    public OkHttpClient getRClient() {
-      return rClient;
-    }
+    //private final static ThreadLocal <OkHttpClient> client = new ThreadLocal<>();
+    //private final static OkHttpClient rClient = new OkHttpClient.Builder().build();
+    //public OkHttpClient getRClient() {
+    //  return rClient;
+    //}
 
     public KickClient(){
         Eventloop eventloop1;
@@ -54,7 +51,7 @@ public class KickClient implements ChannelAuthorizer {
         ExecutorService executor1;
         try {
             eventloop1 = Eventloop.create();
-            aCleint1 = AsyncHttpClient.create(eventloop1).withSslEnabled(SSLContext.getDefault(),eventloop1);
+            aCleint1 = AsyncHttpClient.create(eventloop1).withSslEnabled(SSLContext.getDefault(), eventloop1);
             objectMapper1 = new ObjectMapper();
             executor1 = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() >> 1);
         } catch (NoSuchAlgorithmException e) {
@@ -70,6 +67,34 @@ public class KickClient implements ChannelAuthorizer {
         mapper = objectMapper1;
         executor = executor1;
     }
+
+    public URI authorize() {
+      final SecureRandom secureRandom = new SecureRandom();
+      var state = new byte[64];
+      var codeVerifier = new byte[64];
+      secureRandom.nextBytes(codeVerifier);
+      secureRandom.nextBytes(state);
+      final String verifier = Base64.getUrlEncoder().withoutPadding().encodeToString(codeVerifier);
+      final byte[] challenge = Base64.getUrlEncoder()
+        .withoutPadding()
+        .encode(MessageDigest.getInstance("SHA-256").digest(verifier.getBytes(StandardCharsets.US_ASCII)));
+      
+      var params = new LinkedHashMap<String, String>();
+      params.put("response_type", "code");
+      params.put("client_id", "01JWSQDDS511NH61T75TB4V89M");
+      params.put("redirect_uri", "https://localhost:8080");
+      params.put("scope","user:read channel:read channel:write chat:write events:subscribe moderation:ban");
+      params.put("code_challenge", new String(challenge, StandardCharsets.US_ASCII));
+      params.put("code_challenge_method", "S256");
+      params.put("state", new String(state, StandardCharsets.US_ASCII));
+      var builder = new StringBuilder();
+      builder.append("https://id.kick.com/oauth/authorize?");
+      for (var param : params.entrySet()) {
+        builder.append(param.getKey()).append('=').append(URLEncoder.encode(param.getValue(), StandardCharsets.UTF_8)).append('&');
+      
+    }
+  }
+
 
     /**
      * Grabs a response asynchronously from KickEndpoints.CHANNELS.url using a clone instance of OkHttpClient and parses the json response then maps it to a Channel record
@@ -96,25 +121,25 @@ public class KickClient implements ChannelAuthorizer {
 //        });
 //    }
 
-    public CompletableFuture<Channel> getChannel(String slug){
-        return CompletableFuture.supplyAsync(() -> {
-            client.set(rClient);
-            try (final Response response = client.get().newCall(new Request.Builder().url(CHANNELS.url.concat(slug)).get().build()).execute()) {
-                assert response.body() != null;
-                return response.body().string();
-            } catch (IOException e) {
-                System.err.printf("[\033[31mSEVERE\033[0m] could not execute %s's livestream client call; %s\n", slug, e.getMessage());
-                return null;
-            }
-        }, executor).thenApply(json -> {
-            try {
-                return mapper.readValue(json, Channel.class);
-            } catch (JsonProcessingException e) {
-                System.err.printf("[\033[31mSEVERE\033[0m] could not process json for %s's livestream; %s\n",slug, e.getMessage());
-                return null;
-            }
-        });
-    }
+    //public CompletableFuture<Channel> getChannel(String slug){
+    //    return CompletableFuture.supplyAsync(() -> {
+    //        client.set(rClient);
+    //        try (final Response response = client.get().newCall(new Request.Builder().url(CHANNELS.url.concat(slug)).get().build()).execute()) {
+    //            assert response.body() != null;
+    //            return response.body().string();
+    //        } catch (IOException e) {
+    //            System.err.printf("[\033[31mSEVERE\033[0m] could not execute %s's livestream client call; %s\n", slug, e.getMessage());
+    //            return null;
+    //        }
+    //    }, executor).thenApply(json -> {
+    //        try {
+    //            return mapper.readValue(json, Channel.class);
+    //        } catch (JsonProcessingException e) {
+    //            System.err.printf("[\033[31mSEVERE\033[0m] could not process json for %s's livestream; %s\n",slug, e.getMessage());
+    //            return null;
+    //        }
+    //    });
+    //}
     public CompletableFuture<Livestream> getLivestreamJ(String slug){
         final CompletableFuture<Livestream> resultt = eventloop.submit(()->
             aCleint.request(HttpRequest.get(CHANNELS.url.concat(slug))
@@ -169,77 +194,77 @@ public class KickClient implements ChannelAuthorizer {
      * @param slug streamer username with minimized set of symbols and lowercase letters; e.g. username: United_States_Of_Qassim, slug: united-states-of-qassim
      * @return Channel
      */
-    public Channel getChannelSync(String slug){
-        try(final Response response = rClient.newCall(new Request.Builder().url(CHANNELS.url.concat(slug)).get().build()).execute()){
-            assert response.body() != null;
-            return mapper.readValue(response.body().string(), Channel.class);
-        } catch (IOException e) {
-            System.err.printf("[\033[31mSEVERE\033[0m] could not send fetch %s's; %s\n", slug, e.getMessage());
-            return null;
-        }
+    //public Channel getChannelSync(String slug){
+    //    try(final Response response = rClient.newCall(new Request.Builder().url(CHANNELS.url.concat(slug)).get().build()).execute()){
+    //        assert response.body() != null;
+    //        return mapper.readValue(response.body().string(), Channel.class);
+    //    } catch (IOException e) {
+    //        System.err.printf("[\033[31mSEVERE\033[0m] could not send fetch %s's; %s\n", slug, e.getMessage());
+    //        return null;
+    //    }
+    //
+    //}
 
-    }
+    //public String getChannelJsonSync(String slug){
+    //    try(final Response response = rClient.newCall(new Request.Builder().url(CHANNELS.url.concat(slug)).get().build()).execute()){
+    //        assert response.body() != null;
+    //        return response.body().string();
+    //    } catch (IOException e) {
+    //        System.err.printf("[\033[31mSEVERE\033[0m] could not send fetch %s's; %s", slug, e.getMessage());
+    //        return null;
+    //    }
+    //}
+    //
 
-    public String getChannelJsonSync(String slug){
-        try(final Response response = rClient.newCall(new Request.Builder().url(CHANNELS.url.concat(slug)).get().build()).execute()){
-            assert response.body() != null;
-            return response.body().string();
-        } catch (IOException e) {
-            System.err.printf("[\033[31mSEVERE\033[0m] could not send fetch %s's; %s", slug, e.getMessage());
-            return null;
-        }
-    }
-
-
-    public CompletableFuture<String> getChannelJson(String slug) {
-        return CompletableFuture.supplyAsync(() -> {
-            client.set(rClient);
-            try (final Response response = client.get().newCall(new Request.Builder().url(CHANNELS.url.concat(slug)).get().build()).execute()) {
-                assert response.body() != null;
-                return response.body().string();
-            } catch (IOException e) {
-                System.err.printf("[\033[31mSEVERE\033[0m] could not execute %s's client call; %s", slug, e.getMessage());
-                return null;
-            }
-        }, executor);
-    }
+    //public CompletableFuture<String> getChannelJson(String slug) {
+    //    return CompletableFuture.supplyAsync(() -> {
+    //        client.set(rClient);
+    //        try (final Response response = client.get().newCall(new Request.Builder().url(CHANNELS.url.concat(slug)).get().build()).execute()) {
+    //            assert response.body() != null;
+    //            return response.body().string();
+    //        } catch (IOException e) {
+    //            System.err.printf("[\033[31mSEVERE\033[0m] could not execute %s's client call; %s", slug, e.getMessage());
+    //            return null;
+    //        }
+    //    }, executor);
+    //}
 
     /**
      * Grabs a response asynchronously from KickEndpoints.CHANNELS.url using a clone instance of OkHttpClient and parses the json response then maps it to a Livestream record
      * @param slug streamer username with minimized set of symbols and lowercase letters; e.g. username: United_States_Of_Qassim, slug: united-states-of-qassim
      * @return CompletableFuture
      */
-    public CompletableFuture<Livestream> getLivestream(String slug) {
-        return CompletableFuture.supplyAsync(() -> {
-            client.set(rClient);
-            try (final Response response = client.get().newCall(new Request.Builder().url(CHANNELS.url.concat(slug)).get().build()).execute()) {
-                assert response.body() != null;
-                return response.body().string();
-            } catch (IOException e) {
-                System.err.printf("[\033[31mSEVERE\033[0m] could not execute %s's livestream client call; %s", slug, e.getMessage());
-                return null;
-            }
-        }, executor).thenApply(json -> {
-            try {
-                return mapper.readValue(json, Channel.class).livestream();
-            } catch (JsonProcessingException e) {
-                System.err.printf("[\033[31mSEVERE\033[0m] could not process json for %s's livestream; %s\n", slug, e.getMessage());
-                return null;
-            }
-        });
-    }
+    //public CompletableFuture<Livestream> getLivestream(String slug) {
+    //    return CompletableFuture.supplyAsync(() -> {
+    //        client.set(rClient);
+    //        try (final Response response = client.get().newCall(new Request.Builder().url(CHANNELS.url.concat(slug)).get().build()).execute()) {
+    //            assert response.body() != null;
+    //            return response.body().string();
+    //        } catch (IOException e) {
+    //            System.err.printf("[\033[31mSEVERE\033[0m] could not execute %s's livestream client call; %s", slug, e.getMessage());
+    //            return null;
+    //        }
+    //    }, executor).thenApply(json -> {
+    //        try {
+    //            return mapper.readValue(json, Channel.class).livestream();
+    //        } catch (JsonProcessingException e) {
+    //            System.err.printf("[\033[31mSEVERE\033[0m] could not process json for %s's livestream; %s\n", slug, e.getMessage());
+    //            return null;
+    //        }
+    //    });
+    //}
 
     /**
      * Grabs a response synchronously from KickEndpoints.CHANNELS.url using OkHttpClient and parses the json response then maps it to a Livestream record
      * @param slug streamer username with minimized set of symbols and lowercase letters; e.g. username: United_States_Of_Qassim, slug: united-states-of-qassim
      * @return Livestream record instance
      */
-    public Livestream getLivestreamSync(String slug) throws IOException {
-        try(final Response response = rClient.newCall(new Request.Builder().url(CHANNELS.url.concat(slug)).get().build()).execute()){
-            assert response.body() != null;
-            return mapper.readValue(response.body().string(), Channel.class).livestream();
-        }
-    }
+    //public Livestream getLivestreamSync(String slug) throws IOException {
+    //    try(final Response response = rClient.newCall(new Request.Builder().url(CHANNELS.url.concat(slug)).get().build()).execute()){
+    //        assert response.body() != null;
+    //        return mapper.readValue(response.body().string(), Channel.class).livestream();
+    //    }
+    //}
 
     /**
      *
@@ -247,38 +272,38 @@ public class KickClient implements ChannelAuthorizer {
      * @param socketId
      * @return String Authorization token
      */
-    @Override
-    public String authorize(String channelName, String socketId) {
-        try {
-            return requestToken(channelName, socketId).get();
-        } catch (InterruptedException | ExecutionException e) {
-            System.err.printf("[\033[31mSEVERE\033[0m] could not execute requestToken; %s\n", e.getMessage());
-            return null;
-        }
-    }
-
-    public CompletableFuture<String> requestToken(String chatroomId, String socketId){
-        return CompletableFuture.supplyAsync(() -> {
-            client.set(rClient);
-            StringBuilder builder;
-            System.out.println(builder = new StringBuilder().append("{\n\"socket_id\": \"").append(socketId).append("\",\n\"channel_name\": \"").append(chatroomId).append("\"\n}"));
-            try(final Response response = client.get().newCall(new Request.Builder()
-                .url(new URL(BASE_URL.url.concat("broadcasting/auth")))
-                .post(RequestBody.create(builder.toString(), MediaType.parse("application/json"))).build()).execute()){
-                assert response.body() != null && response.code() == 200;
-                return response.body().string();
-            } catch (IOException e) {
-                System.err.printf("[\033[31mSEVERE\033[0m] could not send token request; %s\n", e);
-                return "";
-            }}, executor).thenApply(json -> {
-            try {
-                System.out.println(json);
-                return mapper.readValue(json, PusherAuthTokenResponse.class).auth();
-            } catch (JsonProcessingException e) {
-                System.err.printf("[\033[31mSEVERE\033[0m] could not process json token; %s\n", e.getMessage());
-                return "";
-            }
-        });
-
-    }
+    //@Override
+    //public String authorize(String channelName, String socketId) {
+    //    try {
+    //        return requestToken(channelName, socketId).get();
+    //    } catch (InterruptedException | ExecutionException e) {
+    //        System.err.printf("[\033[31mSEVERE\033[0m] could not execute requestToken; %s\n", e.getMessage());
+    //        return null;
+    //    }
+    //}
+    //
+    //public CompletableFuture<String> requestToken(String chatroomId, String socketId){
+    //    return CompletableFuture.supplyAsync(() -> {
+    //        client.set(rClient);
+    //        StringBuilder builder;
+    //        System.out.println(builder = new StringBuilder().append("{\n\"socket_id\": \"").append(socketId).append("\",\n\"channel_name\": \"").append(chatroomId).append("\"\n}"));
+    //        try(final Response response = client.get().newCall(new Request.Builder()
+    //            .url(new URL(BASE_URL.url.concat("broadcasting/auth")))
+    //            .post(RequestBody.create(builder.toString(), MediaType.parse("application/json"))).build()).execute()){
+    //            assert response.body() != null && response.code() == 200;
+    //            return response.body().string();
+    //        } catch (IOException e) {
+    //            System.err.printf("[\033[31mSEVERE\033[0m] could not send token request; %s\n", e);
+    //            return "";
+    //        }}, executor).thenApply(json -> {
+    //        try {
+    //            System.out.println(json);
+    //            return mapper.readValue(json, PusherAuthTokenResponse.class).auth();
+    //        } catch (JsonProcessingException e) {
+    //            System.err.printf("[\033[31mSEVERE\033[0m] could not process json token; %s\n", e.getMessage());
+    //            return "";
+    //        }
+    //    });
+    //
+    //}
 }

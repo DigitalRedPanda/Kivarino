@@ -5,13 +5,23 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.activej.eventloop.Eventloop;
 import io.activej.http.AsyncHttpClient;
-import io.activej.http.HttpRequest;
+//import io.activej.http.HttpRequest;
 import org.jetbrains.annotations.Nullable;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
+import java.security.MessageDigest;
+import java.util.Base64;
+import java.util.LinkedHashMap;
+import java.net.http.HttpClient;
+import java.net.http.HttpResponse.BodyHandlers;
+import java.net.URLEncoder;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.http.HttpRequest;
+import java.security.SecureRandom;
 
 import static com.digiunion.kick.util.KickEndpoints.CHANNELS;
 import static io.activej.http.HttpHeaders.ACCEPT_ENCODING;
@@ -57,27 +67,62 @@ public final class Main {
 //        }
 //        System.exit(0);
 //        val serializer = SerializerBuilder.create().build(Channel.class);
-        final Eventloop eventloop = Eventloop.create();
-        final ObjectMapper mapper = new ObjectMapper();
-        final SSLContext ssl = SSLContext.getDefault();
-        final AsyncHttpClient client = AsyncHttpClient.create(eventloop).withSslEnabled(ssl, eventloop);
-        final CompletableFuture<Void> resultt = eventloop.submit(()->
-            client.request(HttpRequest.get(CHANNELS.url.concat("sadmadladsalman"))
-                    .withHeader(USER_AGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/117.0")
-                    .withHeader(ACCEPT_ENCODING,""))
-                .then(lPlusRatio -> lPlusRatio.loadBody())
-                .map(body -> body.getString(StandardCharsets.UTF_8))
-                .whenComplete((result, exceptione) -> System.out.printf("[\033[34mINFO\033[0m] %s has been fetched\n", "aboSalman"))
-                .whenException(exception -> System.err.printf("\033[31mSEVERE\033[0m] could not fetch %s; %s\n", "aboSalman", exception.getMessage()))
-        ).thenApply(aboSalman -> {
-            try {
-                return mapper.readValue(aboSalman, Channel.class);
-            } catch (JsonProcessingException e) {
-                System.err.printf("[\033[SEVERE\033[0m] could not parse aboSalman; %s\n", e.getMessage());
-                return "aboSalman";
-            }
-        }).thenAccept(System.out::println);
-        eventloop.run();
+        //final Eventloop eventloop = Eventloop.create();
+        //final ObjectMapper mapper = new ObjectMapper();
+        //final SSLContext ssl = SSLContext.getDefault();
+        //final AsyncHttpClient client = AsyncHttpClient.create(eventloop).withSslEnabled(ssl, eventloop);
+        //final CompletableFuture<Void> resultt = eventloop.submit(()->
+        //    client.request(HttpRequest.get(CHANNELS.url.concat("sadmadladsalman"))
+        //            .withHeader(USER_AGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/117.0")
+        //            .withHeader(ACCEPT_ENCODING,""))
+        //        .then(lPlusRatio -> lPlusRatio.loadBody())
+        //        .map(body -> body.getString(StandardCharsets.UTF_8))
+        //        .whenComplete((result, exceptione) -> System.out.printf("[\033[34mINFO\033[0m] %s has been fetched\n", "aboSalman"))
+        //        .whenException(exception -> System.err.printf("\033[31mSEVERE\033[0m] could not fetch %s; %s\n", "aboSalman", exception.getMessage()))
+        //).thenApply(aboSalman -> {
+        //    try {
+        //        return mapper.readValue(aboSalman, Channel.class);
+        //    } catch (JsonProcessingException e) {
+        //        System.err.printf("[\033[SEVERE\033[0m] could not parse aboSalman; %s\n", e.getMessage());
+        //        return "aboSalman";
+        //    }
+        //}).thenAccept(System.out::println);
+        //eventloop.run();
+        final SecureRandom secureRandom = new SecureRandom();
+        var state = new byte[64];
+        var codeVerifier = new byte[64];
+        secureRandom.nextBytes(codeVerifier);
+        secureRandom.nextBytes(state);
+        final String verifier = Base64.getUrlEncoder().withoutPadding().encodeToString(codeVerifier);
+        final byte[] challenge = Base64.getUrlEncoder()
+          .withoutPadding()
+          .encode(MessageDigest.getInstance("SHA-256").digest(verifier.getBytes(StandardCharsets.US_ASCII)));
+        var hClient = HttpClient.newBuilder().build();
+        
+        var params = new LinkedHashMap<String, String>();
+        params.put("response_type", "code");
+        params.put("client_id", "01JWSQDDS511NH61T75TB4V89M");
+        params.put("redirect_uri", "https://localhost:8080");
+        params.put("scope","user:read channel:read channel:write chat:write events:subscribe moderation:ban");
+        params.put("code_challenge", new String(challenge, StandardCharsets.US_ASCII));
+        params.put("code_challenge_method", "S256");
+        params.put("state", new String(state, StandardCharsets.US_ASCII));
+        var builder = new StringBuilder();
+        builder.append("https://id.kick.com/oauth/authorize?");
+        for (var param : params.entrySet()) {
+          builder.append(param.getKey()).append('=').append(URLEncoder.encode(param.getValue(), StandardCharsets.UTF_8)).append('&');
+        }
+        builder.deleteCharAt(builder.length() - 1);
+        var response = hClient.send(HttpRequest.newBuilder().GET().uri(URI.create(builder.toString())).build(), BodyHandlers.ofString());
+        Thread.sleep(1000);
+        System.out.println(response.uri().toString() + " " + response.statusCode());
+
+        
+        
+        
+        
+        
+
         //com.digiunion.gui.GUI.main(args);
 //        System.out.println("Headers:");
 //        channel2.join().getHeaders().forEach((lmao) -> System.out.printf("%s: %s,\n", lmao.getKey(), lmao.getValue()));
