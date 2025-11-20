@@ -1,0 +1,12 @@
+/target
+*.env
+*.db
+kivarino.db.mv.db
+kivarino.db.trace.db
+.editorconfig
+poooom.xml
+/\.idea
+/\.setting
+/\.git
+*.so
+*.backup
