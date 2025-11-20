@@ -11,3 +11,6 @@ poooom.xml
 *.so
 *.backup
 runPom.xml
+.classpath
+.factorypath
+.project
