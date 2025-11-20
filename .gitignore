@@ -9,3 +9,5 @@ poooom.xml
 .gitignore
 /\.setting
 /\.git
+*.so
+*.backup
