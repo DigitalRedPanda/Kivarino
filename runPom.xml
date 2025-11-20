@@ -1,35 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
-
   <groupId>com.digiunion</groupId>
   <artifactId>kivarino</artifactId>
   <version>0.0.1</version>
-
   <name>kivarino</name>
-<distributionManagement>
-   <repository>
-     <id>github</id>
-     <name>GitHub Javachaos Apache Maven Packages</name>
-     <url>https://maven.pkg.github.com/javachaos/jrdrand</url>
-   </repository>
+  <distributionManagement>
+    <repository>
+      <id>github</id>
+      <name>GitHub Javachaos Apache Maven Packages</name>
+      <url>https://maven.pkg.github.com/javachaos/jrdrand</url>
+    </repository>
   </distributionManagement>
-
   <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <maven.compiler.source>25</maven.compiler.source>
     <maven.compiler.target>25</maven.compiler.target>
-    <javafx.version>25.0.1</javafx.version>
-    <javafx.plugin.version>0.0.8</javafx.plugin.version>
+    <main.class>com.digiunion.Main</main.class>
+    <maven.compiler.source>25</maven.compiler.source>
     <gluonfx.plugin.version>1.0.23</gluonfx.plugin.version>
-    <main.class>com.digiunion.Main</main.class>
     <javafx.main.class>com.digiunion.gui.GUI</javafx.main.class>
-
-    <main.class>com.digiunion.Main</main.class>
-<!--    <gluonfx.target></gluonfx.target>-->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <javafx.version>25.0.1</javafx.version>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <javafx.plugin.version>0.0.8</javafx.plugin.version>
   </properties>
   <dependencies>
     <dependency>
@@ -108,15 +101,12 @@
       <artifactId>jmh-core</artifactId>
       <version>1.36</version>
     </dependency>
-      <dependency>
+    <dependency>
       <groupId>org.openjdk.jmh</groupId>
       <artifactId>jmh-generator-annprocess</artifactId>
       <version>1.36</version>
     </dependency>
   </dependencies>
-<!--  <profiles>-->
-<!--    <profile>-->
-<!--      <id>native</id>-->
   <build>
     <resources>
       <resource>
@@ -141,8 +131,6 @@
         <version>3.1.0</version>
         <configuration>
           <mainClass>${main.class}</mainClass>
-          <!-- default gc strategy -->
-          <!-- arguments>-XX:+UseG1GC</arguments-->
         </configuration>
       </plugin>
       <plugin>
@@ -154,14 +142,13 @@
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
         <executions>
           <execution>
             <phase>package</phase>
             <goals>
               <goal>shade</goal>
-              </goals>
+            </goals>
             <configuration>
               <shadedArtifactAttached>true</shadedArtifactAttached>
               <transformers>
@@ -169,28 +156,10 @@
                   <mainClass>${main.class}</mainClass>
                 </transformer>
               </transformers>
-            </configuration> 
-
+            </configuration>
           </execution>
         </executions>
       </plugin>
-      <!--<plugin>-->
-      <!--  <groupId>com.gluonhq</groupId>-->
-      <!--  <artifactId>gluonfx-maven-plugin</artifactId>-->
-      <!--  <version>${gluonfx.plugin.version}</version>-->
-      <!--  <configuration>-->
-      <!--    <target>${gluonfx.target}</target>-->
-      <!--    <mainClass>${main.class}</mainClass>-->
-      <!--    <attachList>-->
-      <!--      <list>display</list>-->
-      <!--      <list>lifecycle</list>-->
-      <!--      <list>statusbar</list>-->
-      <!--      <list>storage</list>-->
-      <!--    </attachList>-->
-      <!--  </configuration>-->
-      <!--</plugin>-->
-      
-
       <plugin>
         <groupId>com.gluonhq</groupId>
         <artifactId>gluonfx-maven-plugin</artifactId>
@@ -199,39 +168,10 @@
           <mainClass>${javafx.main.class}</mainClass>
         </configuration>
       </plugin>
-
-
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.13.0</version>
       </plugin>
     </plugins>
   </build>
-  <!--<profiles>-->
-  <!--  <profile>-->
-  <!--    <id>android</id>-->
-  <!--    <properties>-->
-  <!--      <gluonfx.target>android</gluonfx.target>-->
-  <!--    </properties>-->
-  <!--  </profile>-->
-  <!--  <profile>-->
-  <!--    <id>ios</id>-->
-  <!--    <properties>-->
-  <!--      <gluonfx.target>ios</gluonfx.target>-->
-  <!--    </properties>-->
-  <!--  </profile>-->
-  <!--</profiles>-->
-  <!--<repositories>-->
-  <!--  <repository>-->
-  <!--    <id>gluon-releases</id>-->
-  <!--    <url>https://nexus.gluonhq.com/nexus/content/repositories/releases/</url>-->
-  <!--  </repository>-->
-  <!--  <repository>-->
-  <!--    <id>gluon-lts</id>-->
-  <!--    <url>https://nexus.gluonhq.com/nexus/content/repositories/openjfx-lts/</url>-->
-  <!--  </repository>-->
-  <!--</repositories>-->
-
-    
 </project>

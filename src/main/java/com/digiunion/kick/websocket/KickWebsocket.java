@@ -25,7 +25,6 @@ public class KickWebsocket implements Closeable {
         pusher = new Pusher(vitePuserAppKey, new PusherOptions()
             .setHost("stats.pusher.com")
             .setCluster(vitePusherAppCluster)
-            .setChannelAuthorizer(client)
         );
         pusher.connect();
     }

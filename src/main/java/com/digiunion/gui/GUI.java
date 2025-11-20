@@ -18,6 +18,7 @@ import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 
 import java.sql.SQLException;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -30,18 +31,18 @@ public class GUI extends Application {
     public static final Database database = Database.instance;
     public static Image icon;
     public static final FlowPane flow = new FlowPane();
-    public static final ArrayList<String> channels;
+    public static final CopyOnWriteArrayList<Channel> channels;
     public static Stage primaryStage;
 
     static {
-        ArrayList<Channel> channels1;
+        CopyOnWriteArrayList<Channel> channels1;
         try {
             channels1 = database.getAllChannels();
         } catch (SQLException e) {
             System.err.printf("[\033[31mSEVERE\033[0m]could not load channels; %s\n", e.getMessage());
-            channels1 = new ArrayList<>();
+            channels1 = new CopyOnWriteArrayList<>();
         }
-        channels = new ArrayList<>(channels1.stream().map(channel -> channel.user().name()).toList());
+        channels = channels1;
     }
 
     public static final ArrayList<Tab> tabs = new ArrayList<>();
@@ -59,8 +60,8 @@ public class GUI extends Application {
         flow.setVgap(1);
         addButton.setSkin(new AddButtonSkin(addButton, flow));
         if(!channels.isEmpty()) {
-            for (final String channel : channels) {
-                final Tab tab = new Tab(channel);
+            for (final Channel channel : channels) {
+                final Tab tab = new Tab(channel.user().name());
                 tabs.add(tab);
                 flow.getChildren().add(tab);
             }
@@ -86,10 +87,10 @@ public class GUI extends Application {
             do try {
                 Livestream livestream;
                 Circle circle;
-                final ArrayList<String> safetyMeasure = channels;
+                final CopyOnWriteArrayList<Channel> safetyMeasure = channels;
                 final ArrayList<Tab> safetyMeasure2 = tabs;
                 for (var i = 0; i < safetyMeasure2.size(); i++) {
-                    /*System.out.println(*/livestream = client.getLivestream(safetyMeasure.get(i)).get()/*)*/;
+                    /*System.out.println(*/livestream = client.getLivestream(safetyMeasure.get(i).user().name()).get()/*)*/;
                     circle = safetyMeasure2.get(i).liveCircle;
                     System.out.println(safetyMeasure.get(i));
                     if (livestream != null && !circle.isVisible()) {
@@ -100,10 +101,12 @@ public class GUI extends Application {
                         circle.setRadius(0);
                     }
                 }
-                System.out.println("[\033[34mINFO\033[0m]looking for live channels");
+                System.out.println("[\033[34mINFO\033[0m]looking for live hannels");
                 TimeUnit.SECONDS.sleep(15);
-            } catch (InterruptedException | ExecutionException e) {
+            } catch (InterruptedException | ExecutionException  e) {
                 System.err.printf("[\033[31mSEVERE\033[0m] could not sleep live eventListener; %s\n", e.getMessage());
+            } catch(IndexOutOfBoundsException e) {
+                System.out.printf("[\033[33mWARNING\033[0m] oops, race condition\n");
             }
             while (true);
         });

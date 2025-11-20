@@ -1,6 +1,7 @@
 package com.digiunion.gui.component;
 
 import com.digiunion.gui.GUI;
+import com.digiunion.kick.model.Channel;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -30,14 +31,19 @@ public class CloseText extends Text {
                 setFill(Color.web("#D1CBC1"));
         });
         setOnMouseClicked(clickEvent -> {
-            final String channelSlug = tab.text.getText();
-            GUI.channels.remove(channelSlug);
-            GUI.tabs.removeIf(tab1 -> tab1.text.getText().equals(channelSlug));
+            final String username = tab.text.getText();
+            for (int i = 0; i < GUI.channels.size(); i++) {
+              var channel = GUI.channels.get(i);
+              if(GUI.tabs.get(i).text.getText().equals(username)) {
+                GUI.channels.remove(i);
+                GUI.tabs.remove(i);
+              }
+            }
             GUI.flow.getChildren().remove(tab);
             try {
-                GUI.database.deleteChannel(channelSlug);
-            } catch (SQLException e) {
-                System.err.printf("[\033[31mSEVERE\033[0m] could not delete %s tab; %s\n", channelSlug, e.getMessage());
+                GUI.database.deleteChannelByUsername(username);
+            } catch (SQLException | NullPointerException e) {
+                System.err.printf("[\033[31mSEVERE\033[0m] could not delete %s tab; %s\n", username, e.getMessage());
             }
         });
     }

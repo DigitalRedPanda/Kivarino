@@ -59,6 +59,14 @@
         </executions>
       </plugin>
       <plugin>
+        <groupId>com.gluonhq</groupId>
+        <artifactId>gluonfx-maven-plugin</artifactId>
+        <version>1.0.28</version>
+        <configuration>
+          <mainClass>${javafx.main.class}</mainClass>
+        </configuration>
+      </plugin>
+      <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.13.0</version>
       </plugin>
@@ -94,14 +102,14 @@
     </repository>
   </distributionManagement>
   <properties>
+    <maven.compiler.target>25</maven.compiler.target>
     <main.class>com.digiunion.Main</main.class>
-    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.source>25</maven.compiler.source>
     <gluonfx.plugin.version>1.0.23</gluonfx.plugin.version>
     <javafx.main.class>com.digiunion.gui.GUI</javafx.main.class>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <maven.compiler.target>17</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <javafx.version>21.0.4</javafx.version>
-    <javafx.plugin.version>0.0.13</javafx.plugin.version>
+    <javafx.version>25.0.1</javafx.version>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <javafx.plugin.version>0.0.8</javafx.plugin.version>
   </properties>
 </project>

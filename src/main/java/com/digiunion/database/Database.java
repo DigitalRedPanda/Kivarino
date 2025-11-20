@@ -11,7 +11,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,6 +35,7 @@ public class Database implements Closeable {
                 );
                 """);
         } catch (SQLException e) {
+            e.printStackTrace();
             System.err.printf("[\033[31mSEVERE\033[0m]could not load database; %s", e.getMessage());
             System.exit(1);
             temp = null;
@@ -42,9 +43,9 @@ public class Database implements Closeable {
         connection = temp;
     }
 
-    public ArrayList<Channel> getAllChannels() throws SQLException {
+    public CopyOnWriteArrayList<Channel> getAllChannels() throws SQLException {
         try(final Statement statement = connection.createStatement()){
-            ArrayList<Channel> temp = new ArrayList<>();
+            CopyOnWriteArrayList<Channel> temp = new CopyOnWriteArrayList<>();
             ResultSet result = statement.executeQuery("SELECT * FROM channels;");
             while(result.next()) {
                 temp.add(new Channel(result.getInt(1), result.getString(2),
@@ -59,8 +60,9 @@ public class Database implements Closeable {
 
     public Optional<Channel> getChannel(String slug){
         Optional<Channel> optional;
-        try(final Statement statement = connection.createStatement()) {
-            ResultSet result = statement.executeQuery("SELECT * FROM channels WHERE slug = '" + slug + "';");
+        try(var statement = connection.prepareStatement("SELECT * FROM channels WHERE slug = '?';")) {
+            statement.setString(1, slug);
+            ResultSet result = statement.executeQuery();
             result.next();
             optional = Optional.of(new Channel(result.getInt(1), result.getString(2), null, new User(result.getInt(3), result.getString(4)), new Chatroom(result.getInt(5))));
 
@@ -72,60 +74,61 @@ public class Database implements Closeable {
     }
 
     public void insertChannel(Channel channel) throws SQLException {
-        try(final Statement statement = connection.createStatement()) {
-            final StringBuilder result = getStringBuilder(channel, channel.user()).append(";");
-            statement.execute(result.toString());
+        try(var statement = connection.prepareStatement("INSERT INTO channels VALUES(?, ?, ?, ?, ?)")) {
+            statement.setInt(1, channel.id());
+            statement.setString(2, channel.slug());
+            statement.setInt(3, channel.user().id());
+            statement.setString(4, channel.user().name());
+            statement.setInt(5, channel.chatroom().id());
+            statement.execute();
         }
-    }
-
-    private StringBuilder getStringBuilder(Channel channel, User user) {
-        StringBuilder result = new StringBuilder();
-        result.append("INSERT INTO channels VALUES(")
-            .append(channel.id())
-            .append(", '")
-            .append(channel.slug())
-            .append("', ")
-            .append(user.id())
-            .append(", '")
-            .append(user.name())
-            .append("', ")
-            .append(channel.chatroom().id())
-            .append(")");
-            // "INSERT INTO channels VALUES (%d, '%s', '%s', %d, %d, '%s', %d)"
-
-        return result;
     }
 
     public void insertAllChannels(List<Channel> list) throws SQLException {
         final Channel first = list.get(0);
-        final StringBuilder builder = getStringBuilder(first, first.user());
-        for (var i = 1; i < list.size(); i++)
-            insertChannelSafe(list.get(i), builder);
-        try(final Statement statement = connection.createStatement()){
-            statement.execute(builder.toString());
+        final StringBuilder builder = new StringBuilder("INSERT INTO channels VALUES(?, ?, ?, ?, ?)").repeat(",(?, ?, ?, ?, ?)", list.size() - 1);
+        try(var statement = connection.prepareStatement(builder.toString())){
+          statement.setInt(1, first.id());
+          statement.setString(2, first.slug());
+          statement.setInt(3, first.user().id());
+          statement.setString(4, first.user().name());
+          statement.setInt(5, first.chatroom().id());
+
+          for (var i = 1; i < list.size(); i++)   {
+            var channel = list.get(i);
+            var number = 5 * i;
+            statement.setInt(1 + number, channel.id());
+            statement.setString(2 + number, channel.slug());
+            statement.setInt(3 + number, channel.user().id());
+            statement.setString(4 + number, channel.user().name());
+            statement.setInt(5 + number, channel.chatroom().id());
+      }
+            statement.execute();
         }
     }
-    private void insertChannelSafe(Channel channel, StringBuilder builder){
-        final User user = channel.user();
-        builder.append(",(")
-            .append(channel.id())
-            .append(", '")
-            .append(channel.slug())
-            .append("', ")
-            .append(user.id())
-            .append(", '")
-            .append(user.name())
-            .append("', ")
-            .append(channel.chatroom().id())
-            .append(")");
+    public void deleteChannelBySlug(String slug) throws SQLException {
+        try(var statement = connection.prepareStatement("DELETE FROM channels WHERE slug = ?;")){
+            statement.setString(1, slug);
+            if(statement.executeUpdate() > 0) {
+              System.out.printf("[\033[34mINFO\033[0m] channel %s has been deleted\n", slug);
+            } else {
+              System.out.printf("[\033[34mINFO\033[0m] channel %s has not been deleted\n", slug);
+            }
+        }
     }
 
-    public void deleteChannel(String slug) throws SQLException {
-        try(final Statement statement = connection.createStatement()){
-            final StringBuilder builder = new StringBuilder("DELETE FROM channels WHERE slug = '").append(slug).append("';");
-            statement.execute(builder.toString());
+    public void deleteChannelByUsername(String username) throws SQLException {
+        try(var statement = connection.prepareStatement("DELETE FROM channels WHERE username = ?;")){
+            statement.setString(1, username);
+            if(statement.executeUpdate() > 0) {
+              System.out.printf("[\033[34mINFO\033[0m] channel %s has been deleted\n", username);
+            } else {
+              System.out.printf("[\033[34mINFO\033[0m] channel %s has not been deleted\n", username);
+            }
         }
     }
+
+
 
     public void deleteAllChannels() throws SQLException {
         try(final Statement statement = connection.createStatement()){

@@ -88,37 +88,37 @@ public final class Main {
         //    }
         //}).thenAccept(System.out::println);
         //eventloop.run();
-        final SecureRandom secureRandom = new SecureRandom();
-        var state = new byte[64];
-        var codeVerifier = new byte[64];
-        secureRandom.nextBytes(codeVerifier);
-        secureRandom.nextBytes(state);
-        final String verifier = Base64.getUrlEncoder().withoutPadding().encodeToString(codeVerifier);
-        final byte[] challenge = Base64.getUrlEncoder()
-          .withoutPadding()
-          .encode(MessageDigest.getInstance("SHA-256").digest(verifier.getBytes(StandardCharsets.US_ASCII)));
-        var hClient = HttpClient.newBuilder().build();
-        
-        var params = new LinkedHashMap<String, String>();
-        params.put("response_type", "code");
-        params.put("client_id", "01JWSQDDS511NH61T75TB4V89M");
-        params.put("redirect_uri", "https://localhost:8080");
-        params.put("scope","user:read channel:read channel:write chat:write events:subscribe moderation:ban");
-        params.put("code_challenge", new String(challenge, StandardCharsets.US_ASCII));
-        params.put("code_challenge_method", "S256");
-        params.put("state", new String(state, StandardCharsets.US_ASCII));
-        var builder = new StringBuilder();
-        builder.append("https://id.kick.com/oauth/authorize?");
-        for (var param : params.entrySet()) {
-          builder.append(param.getKey()).append('=').append(URLEncoder.encode(param.getValue(), StandardCharsets.UTF_8)).append('&');
-        }
-        builder.deleteCharAt(builder.length() - 1);
-        var response = hClient.send(HttpRequest.newBuilder().GET().uri(URI.create(builder.toString())).build(), BodyHandlers.ofString());
-        Thread.sleep(1000);
-        System.out.println(response.uri().toString() + " " + response.statusCode());
+        //
+        //final SecureRandom secureRandom = new SecureRandom();
+        //var state = new byte[64];
+        //var codeVerifier = new byte[64];
+        //secureRandom.nextBytes(codeVerifier);
+        //secureRandom.nextBytes(state);
+        //final String verifier = Base64.getUrlEncoder().withoutPadding().encodeToString(codeVerifier);
+        //final byte[] challenge = Base64.getUrlEncoder()
+        //  .withoutPadding()
+        //  .encode(MessageDigest.getInstance("SHA-256").digest(verifier.getBytes(StandardCharsets.US_ASCII)));
+        //var hClient = HttpClient.newBuilder().build();
+        //
+        //var params = new LinkedHashMap<String, String>();
+        //params.put("response_type", "code");
+        //params.put("client_id", "01JWSQDDS511NH61T75TB4V89M");
+        //params.put("redirect_uri", "https://localhost:8080");
+        //params.put("scope","user:read channel:read channel:write chat:write events:subscribe moderation:ban");
+        //params.put("code_challenge", new String(challenge, StandardCharsets.US_ASCII));
+        //params.put("code_challenge_method", "S256");
+        //params.put("state", new String(state, StandardCharsets.US_ASCII));
+        //var builder = new StringBuilder();
+        //builder.append("https://id.kick.com/oauth/authorize?");
+        //for (var param : params.entrySet()) {
+        //  builder.append(param.getKey()).append('=').append(URLEncoder.encode(param.getValue(), StandardCharsets.UTF_8)).append('&');
+        //}
+        //builder.deleteCharAt(builder.length() - 1);
+        //var response = hClient.send(HttpRequest.newBuilder().GET().uri(URI.create(builder.toString())).build(), BodyHandlers.ofString());
+        //Thread.sleep(1000);
+        //System.out.println(response.uri().toString() + " " + response.statusCode());
 
-        
-        
+        com.digiunion.gui.GUI.main(args);        
         
         
         

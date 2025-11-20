@@ -2,6 +2,7 @@ package com.digiunion.gui.skin;
 
 import com.digiunion.database.Database;
 import com.digiunion.gui.GUI;
+import com.digiunion.gui.component.CloseText;
 import com.digiunion.gui.component.Tab;
 import com.digiunion.kick.KickClient;
 import com.digiunion.kick.model.Channel;
@@ -26,6 +27,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
@@ -69,6 +71,7 @@ public class AddButtonSkin extends ButtonSkin {
                         final Optional<Channel> option = client.getChannel(channelName.getText()).thenApply(Optional::ofNullable).join();
                         if(option.isPresent()) {
                             final Channel channelValue = option.get();
+                            System.out.printf("[\033[34mINFO\033[0m] channelName: %s, response: %s\n", channelName.getText(), option.get());
                             if(channelValue.slug().equals("damnbaldguy")) {
                                 error("this mf doesn't like beethoven").show();
                             }
@@ -86,8 +89,17 @@ public class AddButtonSkin extends ButtonSkin {
                                     children.set(children.size() - 1, tab);
                                     children.add(control);
                                     GUI.tabs.add(tab);
+                                    if(Tab.focusedTab != null) {
+                                      Tab.focusedTab.setStyle("-fx-background-color: #404446;");
+                                      Tab.focusedTab.closeText.setVisible(false);
+                                      Tab.focusedTab.colorAdjust.setBrightness(0);
+                                      Tab.focusedTab.closeText.setFont(Font.font(0));
+                                      Tab.focusedTab.hBox.setPadding(Tab.unhoveredInset);
+                                    }
+                                    Tab.focusedTab = tab; 
                                     tab.requestFocus();
-                                    GUI.channels.add(channelValue.user().name());
+                                                                      
+                                    GUI.channels.add(channelValue);
                                 } catch (SQLException e) {
                                     error("could not add %s, either they were already added or they don't exist (delulu)".formatted(channelName.getText())).show();
                                     System.err.printf("[\033[31mSEVERE\033[0m] could not insert %s; %s\n", channelName.getText() ,e.getMessage());
