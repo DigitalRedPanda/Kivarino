@@ -5,9 +5,9 @@ kivarino.db.mv.db
 kivarino.db.trace.db
 .editorconfig
 poooom.xml
-/\.idea
-/\.setting
-/\.git
+/.idea
+/.setting
+/.git
 *.so
 *.backup
 runPom.xml
