@@ -14,3 +14,4 @@ runPom.xml
 .classpath
 .factorypath
 .project
+dependency-reduced-pom.xml
