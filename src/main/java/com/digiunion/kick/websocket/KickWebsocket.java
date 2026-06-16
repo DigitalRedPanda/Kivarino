@@ -11,6 +11,7 @@ import java.util.concurrent.CompletableFuture;
 
 import static com.pusher.client.connection.ConnectionState.DISCONNECTED;
 
+@Deprecated
 public class KickWebsocket implements Closeable {
 
     private final KickClient client = new KickClient();

@@ -22,7 +22,8 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <maven.compiler.source>25</maven.compiler.source>
     <maven.compiler.target>25</maven.compiler.target>
-    <javafx.version>25.0.1</javafx.version>
+    <javafx.version>21.0.11</javafx.version>
+    <tink.version>1.21.0</tink.version>
     <javafx.plugin.version>0.0.8</javafx.plugin.version>
     <gluonfx.plugin.version>1.0.23</gluonfx.plugin.version>
     <main.class>com.digiunion.Main</main.class>
@@ -104,6 +105,11 @@
       <version>2.0.5</version>
     </dependency>
     <dependency>
+      <groupId>com.google.crypto.tink</groupId>
+      <artifactId>tink</artifactId>
+      <version>${tink.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.openjdk.jmh</groupId>
       <artifactId>jmh-core</artifactId>
       <version>1.36</version>
@@ -124,35 +130,35 @@
       </resource>
     </resources>
     <plugins>
-      <plugin>
-        <artifactId>maven-jar-plugin</artifactId>
-        <version>3.4.2</version>
-        <configuration>
-          <archive>
-            <manifest>
-              <mainClass>${main.class}</mainClass>
-            </manifest>
-          </archive>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <version>3.1.0</version>
-        <configuration>
-          <mainClass>${main.class}</mainClass>
+      <!-- <plugin> -->
+      <!--   <artifactId>maven-jar-plugin</artifactId> -->
+      <!--   <version>3.4.2</version> -->
+      <!--   <configuration> -->
+      <!--     <archive> -->
+      <!--       <manifest> -->
+      <!--         <mainClass>${main.class}</mainClass> -->
+      <!--       </manifest> -->
+      <!--     </archive> -->
+      <!--   </configuration> -->
+      <!-- </plugin> -->
+      <!-- <plugin> -->
+      <!--   <groupId>org.codehaus.mojo</groupId> -->
+      <!--   <artifactId>exec-maven-plugin</artifactId> -->
+      <!--   <version>3.1.0</version> -->
+      <!--   <configuration> -->
+      <!--     <mainClass>${main.class}</mainClass> -->
           <!-- default gc strategy -->
           <!-- arguments>-XX:+UseG1GC</arguments-->
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.openjfx</groupId>
-        <artifactId>javafx-maven-plugin</artifactId>
-        <version>${javafx.plugin.version}</version>
-        <configuration>
-          <mainClass>${javafx.main.class}</mainClass>
-        </configuration>
-      </plugin>
+        <!-- </configuration> -->
+      <!-- </plugin> -->
+      <!-- <plugin> -->
+      <!--   <groupId>org.openjfx</groupId> -->
+      <!--   <artifactId>javafx-maven-plugin</artifactId> -->
+      <!--   <version>${javafx.plugin.version}</version> -->
+      <!--   <configuration> -->
+      <!--     <mainClass>${javafx.main.class}</mainClass> -->
+      <!--   </configuration> -->
+      <!-- </plugin> -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
@@ -199,13 +205,30 @@
           <mainClass>${javafx.main.class}</mainClass>
         </configuration>
       </plugin>
-
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.13.0</version>
-      </plugin>
+      <!---->
+      <!-- <plugin> -->
+      <!--   <groupId>org.graalvm.buildtools</groupId> -->
+      <!--   <artifactId>native-maven-plugin</artifactId> -->
+      <!--   <version>0.10.5</version> -->
+      <!--   <extensions>true</extensions> -->
+      <!--   <executions> -->
+      <!--     <execution> -->
+      <!--       <id>build-native</id> -->
+      <!--       <goals> -->
+      <!--         <goal>compile-no-fork</goal> -->
+      <!--       </goals> -->
+      <!--       <phase>package</phase> -->
+      <!--     </execution> -->
+      <!--   </executions> -->
+      <!--   <configuration> -->
+      <!--     <mainClass>${main.class}</mainClass> -->
+      <!--   </configuration> -->
+      <!-- </plugin> -->
+      <!-- <plugin> -->
+      <!--   <groupId>org.apache.maven.plugins</groupId> -->
+      <!--   <artifactId>maven-compiler-plugin</artifactId> -->
+      <!--   <version>3.13.0</version> -->
+      <!-- </plugin> -->
     </plugins>
   </build>
   <!--<profiles>-->

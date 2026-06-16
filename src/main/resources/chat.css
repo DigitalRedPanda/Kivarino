@@ -1,0 +1,18 @@
+.root {
+
+  -fx-font-size: 1.2em;
+}
+
+.chat-box .scroll-pane,
+.chat-box .scroll-pane .viewport {
+    -fx-background-color: transparent;
+} {
+  -fx-background-color: transparent;
+  -fx-border: 0px;
+}
+
+
+.message-textfield {
+  -fx-background-color: #0b0e0f;
+  -fx-text-fill: lightgrey;
+}

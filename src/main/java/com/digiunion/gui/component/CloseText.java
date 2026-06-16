@@ -30,21 +30,33 @@ public class CloseText extends Text {
             else
                 setFill(Color.web("#D1CBC1"));
         });
-        setOnMouseClicked(clickEvent -> {
-            final String username = tab.text.getText();
-            for (int i = 0; i < GUI.channels.size(); i++) {
-              var channel = GUI.channels.get(i);
-              if(GUI.tabs.get(i).text.getText().equals(username)) {
-                GUI.channels.remove(i);
-                GUI.tabs.remove(i);
-              }
-            }
-            GUI.flow.getChildren().remove(tab);
-            try {
-                GUI.database.deleteChannelByUsername(username);
-            } catch (SQLException | NullPointerException e) {
-                System.err.printf("[\033[31mSEVERE\033[0m] could not delete %s tab; %s\n", username, e.getMessage());
-            }
-        });
+    setOnMouseClicked(clickEvent -> {
+      final String username = tab.text.getText();
+      for (int i = 0; i < GUI.channels.size(); i++) {
+        if(GUI.tabs.get(i).text.getText().equals(username)) {
+          GUI.channels.remove(i);
+          var thisTab = GUI.tabs.remove(i);
+          GUI.channelsChats.remove(thisTab.text.getText());
+          if(i < GUI.tabs.size()) {
+            var focusedTab = GUI.tabs.get(i);
+            focusedTab.setActive(true);
+            Tab.focusedTab = focusedTab;
+          } else {
+            var focusedTab = GUI.tabs.get(i > 0 ? i-1: i);
+            Tab.focusedTab = focusedTab;
+            focusedTab.setActive(true);
+          }
+
+          break;
+        }
+      }
+      try {
+        GUI.database.deleteChannelBySlug(username);
+        GUI.flow.getChildren().remove(tab);
+        GUI.client.getExecutor().submit(() -> GUI.client.webSocket.sendText("PART #" + username, true).join());
+      } catch (SQLException | NullPointerException e) {
+        System.err.printf("[\033[31mSEVERE\033[0m] could not delete %s tab; %s\n", username, e.getMessage());
+      }
+    });
     }
 }

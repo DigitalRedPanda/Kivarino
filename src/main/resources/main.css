@@ -31,3 +31,24 @@ src: url('fonts/Roobert-Regular.ttf);
 /*.button:hover{
 -fx-background-color: #54626F;
 }*/
+
+.kick-textfield {
+  -fx-background-color: #0b0e0f;
+  -fx-border-radius: 0px;
+  -fx-border-color: transparent;
+  -fx-text-fill: #ffffff;
+  -fx-padding: 6px 10px;
+  -fx-prompt-text-fill: #474f54;
+  -fx-font-size: 13px;
+}
+
+.kick-textfield:focused {
+  -fx-background-color: #191b1f;
+  -fx-border-color: #00e701;
+  -fx-border-width: 1;
+  -fx-border-radius: 2px;
+}
+
+.kick-textfield:hover {
+  -fx-background-color: #24272c;
+}

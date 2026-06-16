@@ -1,6 +1,6 @@
 package com.digiunion.kick.util;
 
-
+@Deprecated
 public enum KickEndpoints {
     BASE_URL("https://kick.com/"),
     API_V1(BASE_URL.url.concat("api/v1/")),
