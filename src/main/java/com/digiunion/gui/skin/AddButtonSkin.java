@@ -32,6 +32,7 @@ import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
 import com.digiunion.gui.component.Chat;
+import com.digiunion.kick.util.Slugify;
 
 import java.sql.SQLException;
 import java.util.Optional;
@@ -69,10 +70,12 @@ public class AddButtonSkin extends ButtonSkin {
       channelName.setOnAction(event1 -> {
         //                try {
         Platform.runLater(() -> {
-          final Optional<ChannelApi> option = client.getChannelBySlug(GUI.tkn.get(),channelName.getText()).thenApply(Optional::ofNullable).join();
+          var slugifiedChannelName = Slugify.slugify(channelName.getText());
+          System.out.printf("[\033[34mINFO\033[0m] slug for %s is %s\n", channelName.getText(), slugifiedChannelName);
+          final Optional<ChannelApi> option = client.getChannelBySlug(GUI.tkn.get(),Slugify.slugify(slugifiedChannelName)).thenApply(Optional::ofNullable).exceptionally(e -> Optional.empty()).join();
           if(option.isPresent()) {
             final ChannelApi channelValue = option.get();
-            System.out.printf("[\033[34mINFO\033[0m] channelName: %s, response: %s\n", channelName.getText(), option.get());
+            System.out.printf("[\033[34mINFO\033[0m] channelName: %s, response: %s\n", slugifiedChannelName, option.get());
             if(channelValue.slug().equals("damnbaldguy")) {
               error("this mf doesn't like beethoven").show();
             }

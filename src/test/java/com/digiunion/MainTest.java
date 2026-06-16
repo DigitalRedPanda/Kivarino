@@ -1,8 +1,10 @@
 package com.digiunion;
 
 import org.junit.platform.commons.annotation.Testable;
+import org.junit.jupiter.api.Assertions;
 
 import com.digiunion.kick.util.irc.IRCMessage;
+import com.digiunion.kick.util.Slugify;
 import com.digiunion.kick.util.KivarinoURLs;
 
 /**
@@ -19,5 +21,8 @@ public class MainTest {
 
     public void ircParserPingTest() {
       IRCMessage.parse("PING :" + KivarinoURLs.BASE_URL.url);
+  }
+    public void slugTest() {
+    Assertions.assertEquals("digital-red-panda", Slugify.slugify("Digital_Red_Panda"));
   }
 }
