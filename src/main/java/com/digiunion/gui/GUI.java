@@ -159,7 +159,7 @@ public class GUI extends Application {
       if(e.getCode() == KeyCode.T) {
         System.out.println("[\033[34mINFO\033[0m] key has been pressed");
         var subStage = new Stage(StageStyle.UTILITY);
-        var label = new Label("Get at https://kivarino.xyz/authorize");
+        var label = new Label("Get at https://kivarino.online/authorize");
         var textThing = new PasswordField();
         textThing.setMaxWidth(200);
         textThing.setAccessibleText("Don't worry, not stealing your data (no promises), though it might get stolen");
@@ -219,7 +219,7 @@ public class GUI extends Application {
     if(activeAccount == null || tkn.get() == null) {
       System.out.println("[\033[34mINFO\033[0m] key has been pressed");
       var subStage = new Stage(StageStyle.UTILITY);
-      var label = new Label("Get at https://kivarino.xyz/authorize");
+      var label = new Label("Get at https://kivarino.online/authorize");
       var textThing = new PasswordField();
       textThing.setMaxWidth(200);
       textThing.setAccessibleText("Don't worry, not stealing your data (no promises), though it might get stolen");
