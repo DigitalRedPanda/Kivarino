@@ -28,6 +28,9 @@ import java.net.http.HttpRequest.BodyPublishers;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+
 import java.util.Base64;
 import java.time.Duration;
 import java.net.URLEncoder;
@@ -55,15 +58,15 @@ import static io.activej.http.HttpHeaders.USER_AGENT;
 
 public class KickClient {
 
-  public WebSocket webSocket;
+  public AtomicReference<WebSocket> webSocket = new AtomicReference<>();
   record PCKE(String verifier, String challenge){}
   private final ObjectMapper mapper;
+  public final AtomicBoolean reconnecting = new AtomicBoolean(false);
   private final Eventloop eventloop;
   private HttpClient httpClient;
   private final AsyncHttpClient aCleint;
   // To be reused in different classes across the app
   private final ExecutorService executor;
-  private PCKE pcKe;
   public ExecutorService getExecutor() {
     return executor;
   }

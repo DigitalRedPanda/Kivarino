@@ -25,29 +25,29 @@ public class KivarinoListener implements Listener {
   public KivarinoListener(Account account) {
     this.acc = account;
   }
-  
+
   @Override
   public void onOpen(WebSocket webSocket) {
     var token = GUI.database.getTokenByName(acc.name());
     try {
-    webSocket.sendText(new StringBuilder("PASS oauth:").append(token.get().access_token()), true).exceptionally(e -> {
+      webSocket.sendText(new StringBuilder("PASS oauth:").append(token.get().access_token()), true).exceptionally(e -> {
         System.out.printf("[\033[31mSEVERE\033[0m] couldn't complete IRC OAUTH authentication; %s\n", e.getMessage());
         return webSocket.sendClose(1, "connection error").join();
       }).get();
-    webSocket.sendText(new StringBuilder("NICK ").append(acc.name()), true).exceptionally(e -> {
+      webSocket.sendText(new StringBuilder("NICK ").append(acc.name()), true).exceptionally(e -> {
         System.out.printf("[\033[31mSEVERE\033[0m] couldn't complete IRC NICK naming; %s\n", e.getMessage());
         return webSocket.sendClose(1, "connection error").join();
       }).get();
-        CompletableFuture<WebSocket>[] completableFutures = new CompletableFuture[GUI.channels.size()];
-        for (int i = 0; i < completableFutures.length; i++) {
-          completableFutures[i] = webSocket.sendText("JOIN #" + GUI.channels.get(i).slug(),true);
-        }
-        CompletableFuture.allOf(completableFutures).join();
-      
+      CompletableFuture<WebSocket>[] completableFutures = new CompletableFuture[GUI.channels.size()];
+      for (int i = 0; i < completableFutures.length; i++) {
+        completableFutures[i] = webSocket.sendText("JOIN #" + GUI.channels.get(i).slug(),true);
+      }
+      CompletableFuture.allOf(completableFutures).join();
+
     } catch(ExecutionException | InterruptedException e) {
       System.out.printf("[\033[31mSEVERE\033[0m] could not establish an IRC connection; %s: %s", e.getCause().toString() ,e.getMessage());
       webSocket.sendClose(WebSocket.NORMAL_CLOSURE, "failed to authenticate");
-      
+
     } finally {
       webSocket.request(1);
     }
@@ -87,10 +87,10 @@ public class KivarinoListener implements Listener {
 
   }
 
-// @Override
-//   public CompletionStage<?> onPing(WebSocket webSocket, ByteBuffer buffer) {
-//       return CompletableFuture.completedStage(null);
-//   }
+  // @Override
+  //   public CompletionStage<?> onPing(WebSocket webSocket, ByteBuffer buffer) {
+  //       return CompletableFuture.completedStage(null);
+  //   }
 
   @Override
   public void onError(WebSocket webSocket, Throwable error) {
@@ -101,38 +101,58 @@ public class KivarinoListener implements Listener {
     webSocket.request(1);
   }
   private void reconnect(WebSocket webSocket, int status, String reason) {
+    if(!GUI.client.reconnecting.compareAndSet(false, true)) {
       System.out.printf("[\033[31mSEVERE\033[0m] fuck; %s\n", reason);
-      try {
-        while(true) {
+      while(true) {
+        try {
           Thread.sleep(1000);
           WebSocket newSock;
-          GUI.client.webSocket = newSock = GUI.client.connect(this).join();
+          newSock = GUI.client.webSocket.updateAndGet(a -> GUI.client.connect(this).join());
           if(!newSock.isInputClosed() && !newSock.isOutputClosed()) {
             break;
+          } else {
+            newSock.abort();
+            continue;
           }
+        } catch(InterruptedException e) {
+          System.out.printf("[\033[31mSEVERE\033[0m] damn it, I can't wait; %s\n", e.getMessage());
+          continue;
+        } catch (Exception e) {
+          System.out.printf("[\033[31mSEVERE\033[0m] damn it, I can't get a socket ffs; %s\n", e.getMessage());
+          continue;
+        } finally {
+          GUI.client.reconnecting.set(false);
+          webSocket.abort();
         }
-        webSocket.sendClose(status, reason);
-      } catch(InterruptedException e) {
-        System.out.printf("[\033[31mSEVERE\033[0m] damn it, I can't wait; %s\n", e.getMessage());
       }
-
+    }
   }
 
-private void reconnect(WebSocket webSocket, Throwable throwable) {
+  private void reconnect(WebSocket webSocket, Throwable throwable) {
+    if(!GUI.client.reconnecting.compareAndSet(false, true)) {
       System.out.printf("[\033[31mSEVERE\033[0m] fuck; %s\n", throwable.getMessage());
-      try {
-        while(true) {
+      while(true) {
+        try {
           Thread.sleep(1000);
           WebSocket newSock;
-          GUI.client.webSocket = newSock = GUI.client.connect(this).join();
+          newSock = GUI.client.webSocket.updateAndGet(a -> GUI.client.connect(this).join());
           if(!newSock.isInputClosed() && !newSock.isOutputClosed()) {
             break;
+          } else {
+            newSock.abort();
+            continue;
           }
+        } catch(InterruptedException e) {
+          System.out.printf("[\033[31mSEVERE\033[0m] damn it, I can't wait; %s\n", e.getMessage());
+          continue;
+        } catch (Exception e) {
+          System.out.printf("[\033[31mSEVERE\033[0m] damn it, I can't get a socket ffs; %s\n", e.getMessage());
+          continue;
+        } finally {
+          GUI.client.reconnecting.set(false);
+          webSocket.abort();
         }
-        webSocket.sendClose(1, "reconneccting");
-      } catch(InterruptedException e) {
-        System.out.printf("[\033[31mSEVERE\033[0m] damn it, I can't wait; %s\n", e.getMessage());
       }
-
+    }
   }
 }

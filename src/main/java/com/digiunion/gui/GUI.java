@@ -93,10 +93,10 @@ public class GUI extends Application {
   @Override
   public void start(Stage primaryStage) {
     channels.stream().forEach(c -> {
-        var chatBox = new Chat(primaryStage.getWidth(), 300, c.broadcasterUserId());
-        chatBox.prefWidthProperty().bind(primaryStage.widthProperty());
-        chatBox.prefHeightProperty().bind(primaryStage.heightProperty().subtract(flow.heightProperty()));
-        channelsChats.put(c.slug(),chatBox);
+      var chatBox = new Chat(primaryStage.getWidth(), 300, c.broadcasterUserId());
+      chatBox.prefWidthProperty().bind(primaryStage.widthProperty());
+      chatBox.prefHeightProperty().bind(primaryStage.heightProperty().subtract(flow.heightProperty()));
+      channelsChats.put(c.slug(),chatBox);
     });
     icon = new Image("Kivarino.png");
     GUI.primaryStage = primaryStage;
@@ -139,7 +139,7 @@ public class GUI extends Application {
       System.out.println("[\033[34mINFO\033[0m] fetching account");
       var tmpop = database.getAllAccounts();
       if(!tmpop.isEmpty()) {
-      System.out.println("[\033[34mINFO\033[0m] loading account");
+        System.out.println("[\033[34mINFO\033[0m] loading account");
         activeAccount = tmpop.get(0);
       }
     } catch(SQLException e){
@@ -152,7 +152,7 @@ public class GUI extends Application {
         tkn.set(tmpTkn.get());
       }
     }
-    
+
 
     scene.setOnKeyPressed(e -> {
       System.out.println("[\033[34mINFO\033[0m] o here we go!");
@@ -183,18 +183,18 @@ public class GUI extends Application {
             activeAccount = new Account(userD.userId(), userD.name());
             System.out.printf("[\033[34mINFO\033[0m] account fetched: [%d,%s]\n", activeAccount.id(), activeAccount.name());
             if(activeAccount == null) {
-            database.insertAccount(activeAccount);
-            System.out.println("[\033[34mINFO\033[0m] pause...");
-            if(tkn.get().access_token().equals(token[0])) {
-             if(database.updateTokenByName(activeAccount.name(), tkn.get())) {
-               subStage.close();
-             } else {
-               database.insertCreds(activeAccount.id(), tkn.get());
-               System.out.println("[\033[31mSEVERE\033[0m] token refresh failed\n");
-               subStage.close();
-             }
+              database.insertAccount(activeAccount);
+              System.out.println("[\033[34mINFO\033[0m] pause...");
+              if(tkn.get().access_token().equals(token[0])) {
+                if(database.updateTokenByName(activeAccount.name(), tkn.get())) {
+                  subStage.close();
+                } else {
+                  database.insertCreds(activeAccount.id(), tkn.get());
+                  System.out.println("[\033[31mSEVERE\033[0m] token refresh failed\n");
+                  subStage.close();
+                }
               }
-           } else {
+            } else {
 
               System.out.println("[\033[31mSEVERE\033[0m] weird\n");
             }
@@ -235,7 +235,7 @@ public class GUI extends Application {
                 return client.getUserByToken(token[0]);
               } else {
                 return client.refresh(new Credentials(0, token[1], null, token[0], 0, null)).thenCompose(r -> {
-                  
+
                   tkn.set(new Credentials(r.account_id(), r.refresh_token(), r.scope(), r.access_token(), r.expiresIn(), Timestamp.from(Instant.now())));
                   return client.getUserByToken(r.access_token());
                 });
@@ -255,7 +255,7 @@ public class GUI extends Application {
             } else {
               database.insertCredsByName(activeAccount.name(), tkn.get());
               System.out.println("[\033[31mSEVERE\033[0m] token refresh failed\n");
-              condition.set(true);
+              condition.compareAndSet(false, true);
               subStage.close();
             }
 
@@ -280,27 +280,28 @@ public class GUI extends Application {
       System.out.printf("[\033[34mINFO\033[0m] token found for %s\n", activeAccount.name());
       tkn.set(database.getTokenByName(activeAccount.name()).get());
       try {
-      Credentials t = client.introspect(tkn.get().access_token()).thenCompose(introspection -> {
-        if(!introspection.data().active()) {
-          return client.refresh(tkn.get());
-        } else {
-          return CompletableFuture.completedFuture(tkn.get());
+        Credentials t = client.introspect(tkn.get().access_token()).thenCompose(introspection -> {
+          if(!introspection.data().active()) {
+            return client.refresh(tkn.get());
+          } else {
+            return CompletableFuture.completedFuture(tkn.get());
+          }
+        }).get();
+        if(!t.tokensEquals(tkn.get())) {
+          tkn.set(new Credentials(t.account_id(), t.refresh_token(), t.scope(), t.access_token(), t.expiresIn(), Timestamp.from(Instant.now())));
+          database.updateTokenByName(activeAccount.name(), tkn.get());
         }
-      }).get();
-      if(!t.tokensEquals(tkn.get())) {
-        tkn.set(new Credentials(t.account_id(), t.refresh_token(), t.scope(), t.access_token(), t.expiresIn(), Timestamp.from(Instant.now())));
-        database.updateTokenByName(activeAccount.name(), tkn.get());
-      }
         condition.set(true);
-    } catch(InterruptedException | ExecutionException e) {
+      } catch(InterruptedException | ExecutionException e) {
         System.out.printf("[\033[31mSEVERE\033[0m] could not load token; %s\n", e.getMessage());
       }
     }
     client.getExecutor().execute(() -> {
       try {
         while(!condition.get()) Thread.sleep(500);
-        client.webSocket = client.connect(new KivarinoListener(activeAccount)).get();
-      } catch(ExecutionException | InterruptedException e){
+        WebSocket newSock = client.connect(new KivarinoListener(activeAccount)).join();
+WebSocket oldSock = client.webSocket.getAndSet(newSock);
+if (oldSock != null) oldSock.abort();      } catch(Exception e){
         System.out.printf("[\033[31SEVERE\033[0m] didn't find connect ya webSocket bub; %s\n", e.getMessage());
       }
     });
@@ -310,95 +311,122 @@ public class GUI extends Application {
     // borderPane.setCenter(chatBox);
     //
     client.getExecutor().execute(() -> {
-      try{while(!condition.get()) Thread.sleep(500);} catch(Exception e) {}
-      if(tkn.get() != null){
-        do try {
-          if(tabs.size() > 0) {
-          final CopyOnWriteArrayList<ChannelApi> safetyMeasure = channels;
-          final CopyOnWriteArrayList<Tab> safetyMeasure2 = tabs;
-          var res = new CopyOnWriteArrayList<ChannelApi> (Arrays.stream(client.getChannelsBySlug(tkn.get(), safetyMeasure.stream().map(ChannelApi::slug).toList().toArray(new String[0])).get()).toList().toArray(new ChannelApi[0]));
-          
-          for (var i = 0; i < res.size(); i++) {
-            final int idx = i;
-            //System.out.println(safetyMeasure.get(i));
-            Platform.runLater( () -> {
+      try{
+        while(!condition.get()) {
+          System.out.printf("[\033[34mINFO\033[0m] ");
+          Thread.sleep(500);
+        };
+      } catch(Exception e) {
 
-          Stream livestream;
-          Circle circle;
-
-            livestream = res.get(idx).stream()/*)*/;
-            circle = safetyMeasure2.stream().filter(c -> c.text.textProperty().get().equals(res.get(idx).slug())).toList().get(0).liveCircle;
-            if (livestream.isLive() && !circle.isVisible()) {
-              circle.setRadius(2);
-              circle.setVisible(true);
-            } else if (!livestream.isLive() && circle.isVisible()) {
-              circle.setVisible(false);
-              circle.setRadius(0);
-            }
-            });
+      }
+      
+      do try {
+        if(tkn.get() != null){
+          Thread.sleep(Duration.ofSeconds(5));
+          var tknOpt = database.getTokenByName(activeAccount.name());
+          if(tknOpt.isPresent()) {
+            var newTkn = client.introspect(tkn.get().access_token())
+            .thenCompose(r -> {
+              if(!r.data().active()) {
+                return client.refresh(tkn.get());
+              } else {
+                return CompletableFuture.completedFuture(tkn.get());
+              }
+            }).get();
+            if(newTkn != tkn.get()) {
+              database.updateTokenByName(activeAccount.name(), newTkn);
+              tkn.set(new Credentials(newTkn.account_id(), newTkn.refresh_token(), newTkn.scope(), newTkn.access_token(), newTkn.expiresIn(), Timestamp.from(Instant.now())));
+            };
           }
-          System.out.println("[\033[34mINFO\033[0m]looking for live channels");
+
+          if(tabs.size() > 0) {
+            final CopyOnWriteArrayList<ChannelApi> safetyMeasure = channels;
+            final CopyOnWriteArrayList<Tab> safetyMeasure2 = tabs;
+            var res = new CopyOnWriteArrayList<ChannelApi> (Arrays.stream(client.getChannelsBySlug(tkn.get(), safetyMeasure.stream().map(ChannelApi::slug).toList().toArray(new String[0])).get()).toList().toArray(new ChannelApi[0]));
+
+            for (var i = 0; i < res.size(); i++) {
+              final int idx = i;
+              //System.out.println(safetyMeasure.get(i));
+              Platform.runLater( () -> {
+
+                Stream livestream;
+                Circle circle;
+
+                livestream = res.get(idx).stream()/*)*/;
+                circle = safetyMeasure2.stream().filter(c -> c.text.textProperty().get().equals(res.get(idx).slug())).toList().get(0).liveCircle;
+                if (livestream.isLive() && !circle.isVisible()) {
+                  circle.setRadius(2);
+                  circle.setVisible(true);
+                } else if (!livestream.isLive() && circle.isVisible()) {
+                  circle.setVisible(false);
+                  circle.setRadius(0);
+                }
+              });
+            }
+            System.out.println("[\033[34mINFO\033[0m]looking for live channels");
           }
           TimeUnit.SECONDS.sleep(15);
-          } catch(Exception e) {
-          System.err.printf("[\033[31mSEVERE\033[0m] could not sleep live eventListener; %s\n", e.getMessage());
-        } finally {
-          try{TimeUnit.SECONDS.sleep(5);} catch(Exception e) {}
+        } else {
+          System.out.printf("god fuckin' damn it\n");
         }
-        // } catch (InterruptedException | ExecutionException  e) {
-        //   System.err.printf("[\033[31mSEVERE\033[0m] could not sleep live eventListener; %s\n", e.getMessage());
-        // } catch(IndexOutOfBoundsException e) {
-        //   System.out.printf("[\033[33mWARNING\033[0m] oops, race condition\n");
-        // }
-        while (true);
-      } else {
-        System.out.printf("god fuckin' damn it\n");
-      } 
-      try {
-        Thread.sleep(1000);
+        try {
+          Thread.sleep(1000);
         } catch(InterruptedException e) {
           System.out.printf("[\033[33mWARNING\033[0m] oops, couldn't sleep enough\n");
         }
+      } catch(Exception e) {
+        System.err.printf("[\033[31mSEVERE\033[0m] could not sleep live eventListener; %s\n", e.getMessage());
+      } finally {
+        try{TimeUnit.SECONDS.sleep(5);} catch(Exception e) {}
+      }
+      // } catch (InterruptedException | ExecutionException  e) {
+      //   System.err.printf("[\033[31mSEVERE\033[0m] could not sleep live eventListener; %s\n", e.getMessage());
+      // } catch(IndexOutOfBoundsException e) {
+      //   System.out.printf("[\033[33mWARNING\033[0m] oops, race condition\n");
+      // }
+      while (true);
+
+
     });
     primaryStage.setOnCloseRequest(ev -> {
-        CompletableFuture<WebSocket>[] completableFutures = new CompletableFuture[GUI.channels.size()];
-        for (int i = 0; i < completableFutures.length; i++) {
-          completableFutures[i] = client.webSocket.sendText("PART #" + GUI.channels.get(i).slug(),true);
-        }
-        CompletableFuture.allOf(completableFutures).join();
-          client.webSocket.sendClose(WebSocket.NORMAL_CLOSURE, "connection terminated");
-    });
-    client.getExecutor().submit(() -> {
-
-    try {
-      while (true) {
-        if(tkn.get() != null){
-            Thread.sleep(Duration.ofSeconds(5));
-            var tknOpt = database.getTokenByName(activeAccount.name());
-            if(tknOpt.isPresent()) {
-              var newTkn = client.introspect(tkn.get().access_token())
-              .thenCompose(r -> {
-                if(!r.data().active()) {
-                  return client.refresh(tkn.get());
-                } else {
-                  return CompletableFuture.completedFuture(tkn.get());
-                }
-              }).get();
-              if(newTkn != tkn.get()) {
-                database.updateTokenByName(activeAccount.name(), newTkn);
-                tkn.set(new Credentials(newTkn.account_id(), newTkn.refresh_token(), newTkn.scope(), newTkn.access_token(), newTkn.expiresIn(), Timestamp.from(Instant.now())));
-              };
-            }
-            }
-        Thread.sleep(1000);
-        }
-
-          } catch(InterruptedException | ExecutionException e) {
-      
+      CompletableFuture<WebSocket>[] completableFutures = new CompletableFuture[GUI.channels.size()];
+      for (int i = 0; i < completableFutures.length; i++) {
+        completableFutures[i] = client.webSocket.get().sendText("PART #" + GUI.channels.get(i).slug(),true);
       }
-
-       try{Thread.sleep(1000);} catch(InterruptedException ex) {}
+      CompletableFuture.allOf(completableFutures).join();
+      client.webSocket.get().sendClose(WebSocket.NORMAL_CLOSURE, "connection terminated");
     });
+    // client.getExecutor().submit(() -> {
+    //
+    //   try {
+    //     while (true) {
+    //       if(tkn.get() != null){
+    //         Thread.sleep(Duration.ofSeconds(5));
+    //         var tknOpt = database.getTokenByName(activeAccount.name());
+    //         if(tknOpt.isPresent()) {
+    //           var newTkn = client.introspect(tkn.get().access_token())
+    //           .thenCompose(r -> {
+    //             if(!r.data().active()) {
+    //               return client.refresh(tkn.get());
+    //             } else {
+    //               return CompletableFuture.completedFuture(tkn.get());
+    //             }
+    //           }).get();
+    //           if(newTkn != tkn.get()) {
+    //             database.updateTokenByName(activeAccount.name(), newTkn);
+    //             tkn.set(new Credentials(newTkn.account_id(), newTkn.refresh_token(), newTkn.scope(), newTkn.access_token(), newTkn.expiresIn(), Timestamp.from(Instant.now())));
+    //           };
+    //         }
+    //       }
+    //       Thread.sleep(1000);
+    //     }
+    //
+    //   } catch(InterruptedException | ExecutionException e) {
+    //
+    //   }
+    //
+    //   try{Thread.sleep(1000);} catch(InterruptedException ex) {}
+    // });
   }
   public static void main(String[] args) {
     GUI.launch(args);

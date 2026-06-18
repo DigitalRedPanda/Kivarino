@@ -108,7 +108,7 @@ public class AddButtonSkin extends ButtonSkin {
                 tab.setActive(true);
                 GUI.channels.add(channelValue);
                 GUI.channelsChats.putIfAbsent(channelValue.slug(), new Chat(300,300, channelValue.broadcasterUserId()));
-                GUI.client.getExecutor().submit(() -> client.webSocket.sendText("JOIN #" + channelValue.slug(), true).join());
+                GUI.client.getExecutor().submit(() -> client.webSocket.get().sendText("JOIN #" + channelValue.slug(), true).join());
               } catch (SQLException e) {
                 error("could not add %s, either they were already added or they don't exist (delulu)".formatted(channelName.getText())).show();
                 System.err.printf("[\033[31mSEVERE\033[0m] could not insert %s; %s\n", channelName.getText() ,e.getMessage());

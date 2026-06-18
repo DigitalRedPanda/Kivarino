@@ -53,7 +53,7 @@ public class CloseText extends Text {
       try {
         GUI.database.deleteChannelBySlug(username);
         GUI.flow.getChildren().remove(tab);
-        GUI.client.getExecutor().submit(() -> GUI.client.webSocket.sendText("PART #" + username, true).join());
+        GUI.client.getExecutor().submit(() -> GUI.client.webSocket.get().sendText("PART #" + username, true).join());
       } catch (SQLException | NullPointerException e) {
         System.err.printf("[\033[31mSEVERE\033[0m] could not delete %s tab; %s\n", username, e.getMessage());
       }
